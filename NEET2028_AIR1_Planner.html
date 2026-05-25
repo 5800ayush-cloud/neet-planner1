@@ -1,0 +1,2187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="NEET 2028"/>
+  <meta name="theme-color" content="#020a02"/>
+  <title>NEET 2028 - AIR-1 Mission</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{background:#020a02;min-height:100vh;overflow-x:hidden}
+    #root{min-height:100vh}
+    #error-box{display:none;padding:20px;color:#ff3333;font-family:monospace;font-size:13px;background:#0a0a0a;white-space:pre-wrap}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <div id="error-box"></div>
+  <script>
+    // React hooks as globals
+    const { useState, useEffect, useRef, useCallback, useMemo, Fragment } = React;
+
+    // Show errors visually on screen so we can debug
+    window.onerror = function(msg, src, line, col, err) {
+      var box = document.getElementById('error-box');
+      box.style.display = 'block';
+      box.textContent = 'ERROR at line ' + line + ':\n' + msg + '\n\n' + (err && err.stack ? err.stack : '');
+      return false;
+    };
+  </script>
+  <script>
+ function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+// - FONTS -
+const fl = document.createElement("link");
+fl.href = "https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap";
+fl.rel = "stylesheet"; document.head.appendChild(fl);
+
+const gs = document.createElement("style");
+gs.textContent = `
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#020a02;--bg2:#061206;--bg3:#0a1a0a;--card:#0d200d;--card2:#112611;
+  --border:#1a4d1a;--border2:#2a7a2a;
+  --g:#00ff41;--g2:#00cc33;--g3:#007a1f;--g4:#39ff7a;
+  --text:#c8ffc8;--t2:#7acc7a;--t3:#3d8c3d;
+  --red:#ff3333;--gold:#ffd700;--cyan:#00ffcc;--pur:#aa44ff;--ora:#ff8800;
+  --mono:'Share Tech Mono',monospace;--body:'Rajdhani',sans-serif;--display:'Orbitron',sans-serif;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--g3);border-radius:3px}
+.scan{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.012) 2px,rgba(0,255,65,.012) 4px);pointer-events:none;z-index:9999}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes si{from{transform:translateX(-16px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes glow{0%,100%{text-shadow:0 0 8px var(--g)}50%{text-shadow:0 0 22px var(--g),0 0 44px var(--g2)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 6px var(--g)}50%{box-shadow:0 0 20px var(--g),0 0 40px var(--g3)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes badgePop{0%{transform:scale(0) rotate(-180deg);opacity:0}80%{transform:scale(1.15) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fi{animation:fi .35s ease forwards}
+.si{animation:si .3s ease forwards}
+.glow{animation:glow 2.5s ease-in-out infinite}
+`;
+document.head.appendChild(gs);
+
+// - CONSTANTS -
+const NEET_DATE = new Date("2028-05-06");
+
+const TESTS = [
+  {id:"PT-01",type:"PT",dates:"8-10 May 2026",maxMarks:240,
+   physics:"Units and Measurements",
+   chemistry:"Some Basic Concepts of Chemistry (Full)",
+   botany:"Cell: The Unit of Life (Intro -> Plasma membrane)",
+   zoology:"Structural Organisation in Animals: Animal tissues-I"},
+  {id:"PT-02",type:"PT",dates:"29-31 May 2026",maxMarks:240,
+   physics:"Motion in a Straight Line (Calculus + Graphs)",
+   chemistry:"Some Basic Concepts of Chemistry (Limiting reagents, Solutions)",
+   botany:"Cell: The Unit of Life (Contd.) - Cell wall to Microbodies",
+   zoology:"Structural Organisation: Animal tissues-II, Biomolecules-I"},
+  {id:"PT-03",type:"PT",dates:"19-21 Jun 2026",maxMarks:240,
+   physics:"Motion in a Straight Line (Full)",
+   chemistry:"Structure of Atom (Full)",
+   botany:"Cell Cycle & Cell Division",
+   zoology:"Biomolecules-II (Amino acids to Enzymes, Cofactors)"},
+  {id:"TE-01",type:"TE",dates:"24-28 Jun 2026",maxMarks:720,
+   physics:"Units & Measurements, Motion in a Straight Line",
+   chemistry:"Some Basic Concepts of Chemistry",
+   botany:"Cell: The Unit of Life, Cell Cycle & Cell Division",
+   zoology:"Structural Organisation in Animals \u2013 Animal Tissues only, Biomolecules"},
+  {id:"PT-04",type:"PT",dates:"10-12 Jul 2026",maxMarks:240,
+   physics:"Motion in a Plane (Vectors, 2D motion, Resolution)",
+   chemistry:"Structure of Atom (Orbitals, Electronic Config)",
+   botany:"The Living World, Biological Classification-I (Monera)",
+   zoology:"Breathing & Exchange of Gases"},
+  {id:"PT-05",type:"PT",dates:"24-26 Jul 2026",maxMarks:240,
+   physics:"Motion in a Plane (Projectile, Circular, Relative velocity)",
+   chemistry:"Classification of Elements and Periodicity in Properties",
+   botany:"Biological Classification-II (Eubacteria->Lichens)",
+   zoology:"Body Fluids & Circulation"},
+  {id:"PT-06",type:"PT",dates:"7-9 Aug 2026",maxMarks:240,
+   physics:"Laws of Motion",
+   chemistry:"Chemical Bonding and Molecular Structure (Part 1)",
+   botany:"Morphology of Flowering Plants-I (Root->Aestivation)",
+   zoology:"Excretory Products & their Elimination"},
+  {id:"TE-02",type:"TE",dates:"12-16 Aug 2026",maxMarks:720,
+   physics:"Motion in a Plane, Laws of Motion",
+   chemistry:"Structure of Atom, Classification of Elements & Periodicity",
+   botany:"The Living World, Biological Classification",
+   zoology:"Breathing & Exchange of Gases, Body Fluids & Circulation"},
+  {id:"NRT-01",type:"NRT",dates:"23 Aug 2026 (Online)",maxMarks:720,
+   physics:"Units & Measurements, Motion in a Straight Line",
+   chemistry:"Some Basic Concepts of Chemistry, Structure of Atom",
+   botany:"Cell: The Unit of Life",
+   zoology:"Structural Organisation: Animal tissues only, Biomolecules"},
+  {id:"AIATS-01",type:"AIATS",dates:"30 Aug 2026",maxMarks:720,
+   physics:"Units & Measurements, Motion in a Straight Line",
+   chemistry:"Some Basic Concepts of Chemistry, Structure of Atom",
+   botany:"Cell: The Unit of Life",
+   zoology:"Structural Organisation: Animal tissues only, Biomolecules"},
+  {id:"PT-07",type:"PT",dates:"11-13 Sep 2026",maxMarks:240,
+   physics:"Work, Energy & Power",
+   chemistry:"Chemical Bonding and Molecular Structure (Contd.) - MOT, Hybridisation, H-bonding",
+   botany:"Morphology of Flowering Plants (Contd.) - Androecium to Families",
+   zoology:"Locomotion & Movement"},
+  {id:"PT-08",type:"PT",dates:"25-27 Sep 2026",maxMarks:240,
+   physics:"System of Particles & Rotational Motion",
+   chemistry:"Thermodynamics",
+   botany:"Anatomy of Flowering Plants",
+   zoology:"Neural Control & Coordination"},
+  {id:"TE-03",type:"TE",dates:"7-11 Oct 2026",maxMarks:720,
+   physics:"Work, Energy & Power, System of Particles & Rotational Motion",
+   chemistry:"Chemical Bonding and Molecular Structure",
+   botany:"Morphology of Flowering Plants, Anatomy of Flowering Plants",
+   zoology:"Excretory Products & their Elimination, Locomotion & Movement"},
+  {id:"NRT-02",type:"NRT",dates:"18 Oct 2026 (Online)",maxMarks:720,
+   physics:"Motion in a Plane",
+   chemistry:"Classification of Elements, Chemical Bonding",
+   botany:"Cell Cycle & Cell Division, The Living World",
+   zoology:"Breathing & Exchange of Gases, Body Fluids and Circulation"},
+  {id:"AIATS-02",type:"AIATS",dates:"25 Oct 2026",maxMarks:720,
+   physics:"Motion in a Plane",
+   chemistry:"Classification of Elements, Chemical Bonding",
+   botany:"Cell Cycle & Cell Division, The Living World",
+   zoology:"Breathing & Exchange of Gases, Body Fluids and Circulation"},
+  {id:"NRT-03",type:"NRT",dates:"22 Nov 2026 (Online)",maxMarks:720,
+   physics:"Laws of Motion, Work, Energy and Power",
+   chemistry:"Thermodynamics, Classification of Elements, Chemical Bonding",
+   botany:"Biological Classification, Morphology of Flowering Plants-I (Upto inflorescence)",
+   zoology:"Excretory Products and Their Elimination, Locomotion and Movement"},
+  {id:"AIATS-03",type:"AIATS",dates:"29 Nov 2026",maxMarks:720,
+   physics:"Laws of Motion, Work, Energy and Power",
+   chemistry:"Thermodynamics, Classification of Elements, Chemical Bonding",
+   botany:"Biological Classification, Morphology of Flowering Plants-I (Upto inflorescence)",
+   zoology:"Excretory Products and Their Elimination, Locomotion and Movement"},
+  {id:"TE-04",type:"TE",dates:"9-13 Dec 2026",maxMarks:720,
+   physics:"Gravitation, Mechanical Properties of Solids & Fluids",
+   chemistry:"Thermodynamics, Equilibrium",
+   botany:"Plant Kingdom",
+   zoology:"Neural Control & Coordination, Chemical Coordination and Integration"},
+  {id:"NRT-04",type:"NRT",dates:"20 Dec 2026 (Online)",maxMarks:720,
+   physics:"System of Particles & Rotational Motion, Gravitation",
+   chemistry:"Equilibrium, Redox Reactions, Thermodynamics",
+   botany:"Morphology of Flowering Plants-II, Anatomy of Flowering Plants",
+   zoology:"Neural Control and Coordination, Chemical Coordination and Integration"},
+  {id:"AIATS-04",type:"AIATS",dates:"27 Dec 2026",maxMarks:720,
+   physics:"System of Particles & Rotational Motion, Gravitation",
+   chemistry:"Equilibrium, Redox Reactions, Thermodynamics",
+   botany:"Morphology of Flowering Plants-II, Anatomy of Flowering Plants",
+   zoology:"Neural Control and Coordination, Chemical Coordination and Integration"},
+  {id:"TE-05",type:"TE",dates:"6-10 Jan 2027",maxMarks:720,
+   physics:"Thermal Properties of Matter, Thermodynamics",
+   chemistry:"Redox Reactions, p-Block Elements (Group 13 & 14)",
+   botany:"Photosynthesis in Higher Plants, Respiration in Plants",
+   zoology:"Animal Kingdom-I: General Account & Non-chordates"},
+  {id:"NRT-05",type:"NRT",dates:"17 Jan 2027 (Online)",maxMarks:720,
+   physics:"Mechanical Properties of Solids & Fluids, Thermal Properties of Matter",
+   chemistry:"p-Block Elements (Group 13 & 14), Equilibrium, Redox Reactions",
+   botany:"Plant Kingdom, Photosynthesis in Higher Plants",
+   zoology:"Animal Kingdom-I: General Account & Non-chordates"},
+  {id:"AIATS-05",type:"AIATS",dates:"24 Jan 2027",maxMarks:720,
+   physics:"Mechanical Properties of Solids & Fluids, Thermal Properties of Matter",
+   chemistry:"p-Block Elements (Group 13 & 14), Equilibrium, Redox Reactions",
+   botany:"Plant Kingdom, Photosynthesis in Higher Plants",
+   zoology:"Animal Kingdom-I: General Account & Non-chordates"},
+  {id:"TE-06",type:"TE",dates:"3-7 Feb 2027",maxMarks:720,
+   physics:"Kinetic Theory, Oscillations, Waves",
+   chemistry:"Organic Chemistry: Basic Principles & Techniques, Hydrocarbons",
+   botany:"Plant Growth and Development",
+   zoology:"Animal Kingdom-II, Structural Organisation: Animal Morphology (Cockroach & Frog)"},
+  {id:"NRT-06",type:"NRT",dates:"7 Feb 2027 (Online)",maxMarks:720,
+   physics:"Thermodynamics, Kinetic Theory, Oscillations, Waves",
+   chemistry:"Organic Chemistry: Basic Principles & Techniques, Hydrocarbons",
+   botany:"Respiration in Plants, Plant Growth & Development",
+   zoology:"Animal Kingdom-II, Structural Organisation: Animal Morphology"},
+  {id:"AIATS-06",type:"AIATS",dates:"14 Feb 2027",maxMarks:720,
+   physics:"Thermodynamics, Kinetic Theory, Oscillations, Waves",
+   chemistry:"Organic Chemistry: Basic Principles & Techniques, Hydrocarbons",
+   botany:"Respiration in Plants, Plant Growth & Development",
+   zoology:"Animal Kingdom-II, Structural Organisation: Animal Morphology"},
+  {id:"AIATS-07",type:"AIATS",dates:"14 Mar 2027",maxMarks:720,
+   physics:"Complete Syllabus Class XI",
+   chemistry:"Complete Syllabus Class XI",
+   botany:"Complete Syllabus Class XI",
+   zoology:"Complete Syllabus Class XI"},
+  {id:"AIATS-08",type:"AIATS",dates:"21 Mar 2027",maxMarks:720,
+   physics:"Complete Syllabus Class XI",
+   chemistry:"Complete Syllabus Class XI",
+   botany:"Complete Syllabus Class XI",
+   zoology:"Complete Syllabus Class XI"},
+];
+
+// Map each chapter to the FIRST test that includes it (deadline reference)
+const CHAPTER_TEST_MAP = {
+  // Physics
+  "Physics::Units and Measurements": "PT-01",
+  "Physics::Motion in a Straight Line": "PT-03",
+  "Physics::Motion in a Plane": "PT-05",
+  "Physics::Laws of Motion": "PT-06",
+  "Physics::Work Energy and Power": "PT-07",
+  "Physics::System of Particles and Rotational Motion": "PT-08",
+  "Physics::Gravitation": "TE-04",
+  "Physics::Mechanical Properties of Solids": "TE-05",
+  "Physics::Mechanical Properties of Fluids": "TE-05",
+  "Physics::Thermal Properties of Matter": "TE-05",
+  "Physics::Thermodynamics": "PT-08",
+  "Physics::Kinetic Theory": "TE-06",
+  "Physics::Oscillations": "TE-06",
+  "Physics::Waves": "TE-06",
+  // Chemistry
+  "Chemistry::Some Basic Concepts of Chemistry": "PT-01",
+  "Chemistry::Structure of Atom": "PT-03",
+  "Chemistry::Classification of Elements and Periodicity": "PT-05",
+  "Chemistry::Chemical Bonding and Molecular Structure": "PT-06",
+  "Chemistry::Thermodynamics": "PT-08",
+  "Chemistry::Equilibrium": "TE-04",
+  "Chemistry::Redox Reactions": "NRT-04",
+  "Chemistry::The p-Block Elements": "TE-05",
+  "Chemistry::Organic Chemistry Basic Principles": "TE-06",
+  "Chemistry::Hydrocarbons": "TE-06",
+  // Botany
+  "Botany::Cell: The Unit of Life": "PT-01",
+  "Botany::Cell Cycle and Cell Division": "PT-03",
+  "Botany::The Living World": "PT-04",
+  "Botany::Biological Classification": "PT-05",
+  "Botany::Morphology of Flowering Plants": "PT-06",
+  "Botany::Anatomy of Flowering Plants": "PT-08",
+  "Botany::Plant Kingdom": "TE-04",
+  "Botany::Photosynthesis in Higher Plants": "TE-05",
+  "Botany::Respiration in Plants": "TE-06",
+  "Botany::Plant Growth and Development": "TE-06",
+  // Zoology
+  "Zoology::Structural Organisation in Animals": "PT-01",
+  "Zoology::Biomolecules": "PT-02",
+  "Zoology::Breathing and Exchange of Gases": "PT-04",
+  "Zoology::Body Fluids and Circulation": "PT-05",
+  "Zoology::Excretory Products and Elimination": "PT-06",
+  "Zoology::Locomotion and Movement": "PT-07",
+  "Zoology::Neural Control and Coordination": "PT-08",
+  "Zoology::Chemical Coordination and Integration": "TE-04",
+  "Zoology::Animal Kingdom I": "TE-05",
+  "Zoology::Animal Kingdom II": "TE-06",
+};
+
+const CHAPTERS = {
+  Physics:["Units and Measurements","Motion in a Straight Line","Motion in a Plane","Laws of Motion","Work Energy and Power","System of Particles and Rotational Motion","Gravitation","Mechanical Properties of Solids","Mechanical Properties of Fluids","Thermal Properties of Matter","Thermodynamics","Kinetic Theory","Oscillations","Waves"],
+  Chemistry:["Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements and Periodicity","Chemical Bonding and Molecular Structure","Thermodynamics","Equilibrium","Redox Reactions","The p-Block Elements","Organic Chemistry Basic Principles","Hydrocarbons"],
+  Botany:["Cell: The Unit of Life","Cell Cycle and Cell Division","The Living World","Biological Classification","Morphology of Flowering Plants","Anatomy of Flowering Plants","Plant Kingdom","Photosynthesis in Higher Plants","Respiration in Plants","Plant Growth and Development"],
+  Zoology:["Structural Organisation in Animals","Biomolecules","Breathing and Exchange of Gases","Body Fluids and Circulation","Excretory Products and Elimination","Locomotion and Movement","Neural Control and Coordination","Chemical Coordination and Integration","Animal Kingdom I","Animal Kingdom II"],
+};
+
+// Parse test date to get earliest date
+function parseTestDate(dateStr){
+  const months={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const clean = dateStr.replace(" (Online)","");
+  // "8-10 May 2026" or "30 Aug 2026"
+  const m = clean.match(/(\d+)(?:-\d+)?\s+(\w+)\s+(\d+)/);
+  if(!m) return null;
+  return new Date(parseInt(m[3]), months[m[2]], parseInt(m[1]));
+}
+
+const TEST_DATE_MAP = {};
+TESTS.forEach(t => { TEST_DATE_MAP[t.id] = parseTestDate(t.dates); });
+
+function getChapterDeadline(key){
+  const testId = CHAPTER_TEST_MAP[key];
+  if(!testId) return null;
+  const d = TEST_DATE_MAP[testId];
+  if(!d) return null;
+  // Deadline = 3 days before test
+  const dl = new Date(d); dl.setDate(dl.getDate()-3);
+  return {date:dl, testId};
+}
+
+const BADGES = [
+  {id:"streak7",icon:"\uD83D\uDD25",name:"7-Day Warrior",desc:"7-day study streak",condition:s=>s.streak>=7,color:"#ff6600"},
+  {id:"streak14",icon:"\u26A1",name:"2-Week Thunder",desc:"14-day streak",condition:s=>s.streak>=14,color:"#ffd700"},
+  {id:"streak30",icon:"\uD83D\uDC8E",name:"Monthly Diamond",desc:"30-day streak",condition:s=>s.streak>=30,color:"#00ffcc"},
+  {id:"score600",icon:"\uD83C\uDFAF",name:"Sharpshooter",desc:"Score 600+ in 720-mark test",condition:s=>s.allScores720.some(x=>x>=600),color:"#00ff41"},
+  {id:"score650",icon:"\uD83D\uDE80",name:"Launch Sequence",desc:"Score 650+ in 720-mark test",condition:s=>s.allScores720.some(x=>x>=650),color:"#aa44ff"},
+  {id:"score700",icon:"\uD83D\uDC51",name:"AIR-1 Territory",desc:"Score 700+ in 720-mark test",condition:s=>s.allScores720.some(x=>x>=700),color:"#ffd700"},
+  {id:"focus50",icon:"\uD83E\uDDE0",name:"Deep Thinker",desc:"50 hours focused study",condition:s=>s.focusHours>=50,color:"#00ffcc"},
+  {id:"focus100",icon:"\uD83C\uDFC6",name:"100-Hour Club",desc:"100 hours focused study",condition:s=>s.focusHours>=100,color:"#ffd700"},
+  {id:"chapters10",icon:"\uD83D\uDCDA",name:"Chapter Crusher",desc:"Complete 10 chapters",condition:s=>s.completedChapters>=10,color:"#00ff41"},
+  {id:"chapters30",icon:"\u2694\uFE0F",name:"Knowledge Warrior",desc:"Complete 30 chapters",condition:s=>s.completedChapters>=30,color:"#ff8800"},
+  {id:"noBL",icon:"\u2705",name:"Zero Backlog",desc:"No overdue chapters",condition:s=>s.overdueChapters===0&&s.completedChapters>0,color:"#39ff7a"},
+  {id:"improve50",icon:"\uD83D\uDCC8",name:"Rising Star",desc:"Improve score by 50pts",condition:s=>{const sc=s.allScores720;if(sc.length<2)return false;return sc[sc.length-1]-sc[0]>=50;},color:"#ff8800"},
+];
+
+const SKEY = "neet2028_v2";
+const load = () => { try{const r=localStorage.getItem(SKEY);return r?JSON.parse(r):null;}catch (e2){return null;} };
+const save = d => { try{localStorage.setItem(SKEY,JSON.stringify(d));}catch (e3){} };
+
+const defaults = () => ({
+  streak:0, longestStreak:0, lastStudyDate:null,
+  testScores:{},  // {testId: {physics,chemistry,botany,zoology,total,percentage}}
+  surpriseTests:[], // [{id,title,date,maxMarks,obtained,subject,note}]
+  focusHours:0, focusSessions:0,
+  unlockedBadges:[],
+  chapters:{},    // {key: "not-started"|"in-progress"|"completed"|"revised"}
+  revisionLog:{}, // {key: [{date,type:"auto"|"manual"}]}
+  chatHistory:[],
+  aiMemory:{name:"",goals:"AIR-1 NEET 2028"},
+  pomodoroSettings:{work:25,shortBreak:5,longBreak:15},
+  tasks:[],
+});
+
+// - UI PRIMITIVES -
+const Btn=({onClick,children,variant="primary",size="md",style={}})=>{
+  const s={fontFamily:"var(--body)",fontWeight:700,cursor:"pointer",border:"1px solid",borderRadius:4,transition:"all .2s",letterSpacing:1,fontSize:size==="sm"?11:size==="lg"?16:13,padding:size==="sm"?"3px 10px":size==="lg"?"12px 28px":"7px 16px"};
+  const v={primary:{background:"transparent",color:"var(--g)",borderColor:"var(--g)"},
+    danger:{background:"transparent",color:"var(--red)",borderColor:"var(--red)"},
+    ghost:{background:"transparent",color:"var(--t2)",borderColor:"var(--border)"},
+    gold:{background:"transparent",color:"var(--gold)",borderColor:"var(--gold)"},
+    cyan:{background:"transparent",color:"var(--cyan)",borderColor:"var(--cyan)"},
+    filled:{background:"var(--g3)",color:"#000",borderColor:"var(--g)",fontWeight:900},
+    red:{background:"rgba(255,51,51,.15)",color:"var(--red)",borderColor:"var(--red)"},
+  };
+  return React.createElement('button', { onClick: onClick, style: {...s,...v[variant],...style}, onMouseEnter: e=>e.currentTarget.style.filter="brightness(1.3)", onMouseLeave: e=>e.currentTarget.style.filter="brightness(1)",}, children);
+};
+
+const Card=({children,style={},glow=false})=>(
+  React.createElement('div', { style: {background:"var(--card)",border:`1px solid ${glow?"var(--border2)":"var(--border)"}`,borderRadius:8,padding:18,boxShadow:glow?"0 0 18px rgba(0,255,65,.12),inset 0 0 18px rgba(0,255,65,.03)":"none",...style},}, children)
+);
+
+const PBar=({value,max=100,color="var(--g)",h=5})=>(
+  React.createElement('div', { style: {background:"var(--bg3)",borderRadius:3,height:h,overflow:"hidden"},}
+    , React.createElement('div', { style: {width:`${Math.min((value/max)*100,100)}%`,height:"100%",background:color,borderRadius:3,transition:"width .5s",boxShadow:`0 0 6px ${color}55`},})
+  )
+);
+
+const Hdr=({title,sub})=>(
+  React.createElement('div', { style: {marginBottom:22},}
+    , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:10},}
+      , React.createElement('div', { style: {width:3,height:26,background:"var(--g)",boxShadow:"0 0 10px var(--g)"},})
+      , React.createElement('h2', { style: {fontFamily:"var(--display)",fontSize:18,color:"var(--g)",letterSpacing:2},}, title)
+    )
+    , sub&&React.createElement('div', { style: {color:"var(--t3)",fontSize:12,fontFamily:"var(--mono)",marginTop:3,marginLeft:13},}, sub)
+  )
+);
+
+const Tag=({children,color="var(--g3)"})=>(
+  React.createElement('span', { style: {fontSize:10,fontFamily:"var(--mono)",background:color+"22",color,border:`1px solid ${color}44`,borderRadius:3,padding:"1px 7px",marginRight:3},}, children)
+);
+
+// - GEMINI API CALLER (FREE TIER) -
+const GROQ_KEY_STORE = "neet2028_groq_key";
+const getKey = ()=>{ try{return localStorage.getItem(GEMINI_KEY_STORE)||"";}catch (e4){return "";} };
+const saveKey = k=>{ try{localStorage.setItem(GEMINI_KEY_STORE,k);}catch (e5){} };
+const GROQ_MODEL = "llama3-70b-8192";
+
+async function callAI(systemPrompt, userPrompt){
+  const key = getKey();
+  if(!key) throw new Error("NO_KEY");
+  try{
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({
+        model:GROQ_MODEL, max_tokens:1000, temperature:0.7,
+        messages:[{role:"system",content:systemPrompt},{role:"user",content:userPrompt}]
+      })
+    });
+    const raw = await res.text();
+    if(!res.ok){let m="HTTP "+res.status;try{m=JSON.parse(raw).error?.message||m;}catch(e){}throw new Error(m);}
+    const d = JSON.parse(raw);
+    return d.choices?.[0]?.message?.content||"";
+  }catch(e){
+    if(e.message==="NO_KEY")throw e;
+    throw new Error("GROQ_FAIL:"+e.message);
+  }
+}
+
+async function callAIWithTools(systemPrompt, messages, tools){
+  const key = getKey();
+  if(!key) throw new Error("NO_KEY");
+
+  // Build tool list as text instructions (more reliable than function calling)
+  const toolDesc = tools.map(t=>{
+    const props = Object.keys(t.input_schema.properties||{}).join(", ");
+    return "- "+t.name+": "+t.description+" | params: {"+props+"}";
+  }).join("\n");
+
+  const fullSystem = systemPrompt+"\n\nTOOLS:\n"+toolDesc+"\n\nIF user gives a command, put this at the TOP of reply:\nACTIONS_START\n{\"actions\":[{\"tool\":\"tool_name\",\"params\":{...}}]}\nACTIONS_END\nThen reply normally below. If no action needed, just reply. Match chapter names loosely.";
+
+  const groqMsgs = [{role:"system",content:fullSystem}];
+  messages.filter(m=>m.role==="user"||m.role==="assistant").forEach(m=>{
+    groqMsgs.push({role:m.role, content:typeof m.content==="string"?m.content:JSON.stringify(m.content)});
+  });
+
+  try{
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({model:GROQ_MODEL, max_tokens:1200, temperature:0.7, messages:groqMsgs})
+    });
+    const raw = await res.text();
+    if(!res.ok){let m="HTTP "+res.status;try{m=JSON.parse(raw).error?.message||m;}catch(e){}throw new Error(m);}
+    const d = JSON.parse(raw);
+    let fullText = d.choices?.[0]?.message?.content||"";
+    const toolCalls = [];
+    const actStart = fullText.indexOf("ACTIONS_START");
+    const actEnd = fullText.indexOf("ACTIONS_END");
+    if(actStart!==-1&&actEnd!==-1){
+      try{
+        const jsonStr = fullText.slice(actStart+13,actEnd).trim();
+        const parsed = JSON.parse(jsonStr);
+        (parsed.actions||[]).forEach(a=>{
+          toolCalls.push({function:{name:a.tool,arguments:JSON.stringify(a.params||{})}});
+        });
+      }catch(e){}
+      fullText=(fullText.slice(0,actStart)+fullText.slice(actEnd+11)).trim();
+    }
+    return {text:fullText, toolCalls};
+  }catch(e){
+    if(e.message==="NO_KEY")throw e;
+    throw new Error("GROQ_FAIL:"+e.message);
+  }
+}
+
+function buildDataContext(data){
+  const totalCh = Object.values(CHAPTERS).flat().length;
+  const completedKeys = Object.entries(data.chapters||{}).filter(([,v])=>v==="completed"||v==="revised").map(([k])=>k);
+  const subjPct = Object.entries(CHAPTERS).map(([s,chs])=>{
+    const done=chs.filter(c=>data.chapters[`${s}::${c}`]==="completed"||data.chapters[`${s}::${c}`]==="revised").length;
+    return `${s}:${done}/${chs.length}(${Math.round(done/chs.length*100)}%)`;
+  }).join(", ");
+  const today=new Date();today.setHours(0,0,0,0);
+  const backlog=Object.entries(data.chapters||{}).filter(([k,v])=>{
+    if(v==="completed"||v==="revised")return false;
+    const dl=getChapterDeadline(k);return dl&&dl.date<today;
+  }).map(([k])=>k.split("::")[1]).join(", ")||"none";
+  const scores=Object.entries(data.testScores||{}).map(([tid,sc])=>`${tid}:${sc.total}/${sc.maxMarks||720}`).join(", ")||"none";
+  const subAvg=["physics","chemistry","botany","zoology"].map(sub=>{
+    const vals=Object.values(data.testScores||{}).filter(s=>s[sub]!==undefined);
+    if(!vals.length)return`${sub}:no data`;
+    const avg=Math.round(vals.reduce((a,b)=>a+(b[sub]/(b.maxMarks===240?60:180))*100,0)/vals.length);
+    return`${sub}:${avg}%`;
+  }).join(", ");
+  const revLog=Object.entries(data.revisionLog||{}).map(([k,log])=>{
+    const last=log.length?log[log.length-1].date:"never";
+    return`${k.split("::")[1]}(rev:${log.length},last:${last.slice(0,10)})`;
+  }).join(", ")||"none";
+  return {totalCh,completedKeys,subjPct,backlog,scores,subAvg,revLog,streak:data.streak||0,focusHours:Math.round(data.focusHours||0)};
+}
+
+
+
+// Compute derived stats for AI and badges
+function computeStats(data){
+  const allKeys = Object.entries(CHAPTERS).flatMap(([s,chs])=>chs.map(c=>`${s}::${c}`));
+  const completedChapters = allKeys.filter(k=>data.chapters[k]==="completed"||data.chapters[k]==="revised").length;
+  const today = new Date(); today.setHours(0,0,0,0);
+  let overdueChapters=0, upcomingDeadlines=[];
+  allKeys.forEach(k=>{
+    const st = data.chapters[k]||"not-started";
+    if(st==="completed"||st==="revised") return;
+    const dl = getChapterDeadline(k);
+    if(!dl) return;
+    const dlDate = new Date(dl.date); dlDate.setHours(0,0,0,0);
+    const diff = Math.ceil((dlDate-today)/(86400000));
+    if(diff<0) overdueChapters++;
+    else if(diff<=14) upcomingDeadlines.push({key:k,diff,testId:dl.testId});
+  });
+  upcomingDeadlines.sort((a,b)=>a.diff-b.diff);
+
+  const allScores720 = Object.values(data.testScores)
+    .filter(s=>s&&s.total!==undefined)
+    .map(s=>s.total)
+    .filter(s=>s<=720);
+
+  const subjectAvg = {};
+  ["physics","chemistry","botany","zoology"].forEach(sub=>{
+    const vals=Object.values(data.testScores).filter(s=>s&&s[sub]!==undefined).map(s=>s[sub]);
+    subjectAvg[sub] = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+  });
+
+  const todayStr = new Date().toISOString().split("T")[0];
+  const pendingTasks = (typeof data.tasks !== 'undefined' ? data.tasks : []).filter(t=>!t.done&&(!t.dueDate||t.dueDate<=todayStr)).length;
+  const highPriorityTasks = (typeof data.tasks !== 'undefined' ? data.tasks : []).filter(t=>!t.done&&t.priority==="high").length;
+  return {completedChapters, overdueChapters, upcomingDeadlines, allScores720, subjectAvg, pendingTasks, highPriorityTasks};
+}
+
+// - DASHBOARD -
+function Dashboard({data,setTab}){
+  const stats = useMemo(()=>computeStats(data),[data]);
+  const daysLeft = Math.ceil((NEET_DATE-new Date())/(86400000));
+  const totalCh = Object.values(CHAPTERS).flat().length;
+  const pct = Math.round((stats.completedChapters/totalCh)*100);
+  const latest720 = stats.allScores720.length ? stats.allScores720[stats.allScores720.length-1] : null;
+  const predicted = latest720 ? Math.min(720, Math.round(latest720*1.04+data.streak*0.4)) : null;
+  const next = TESTS.find(t=>!data.testScores[t.id]);
+  const backlogs = stats.overdueChapters;
+
+  return (
+    React.createElement('div', { className: "fi",}
+      , React.createElement(Hdr, { title: "COMMAND CENTER" , sub: `NEET 2028 * AIR-1 MISSION * ${daysLeft} DAYS LEFT`,})
+
+      /* Big stats */
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:18},}
+        , [[daysLeft,"DAYS LEFT","var(--red)","\u23F3"],[`${data.streak}d`,"STREAK","var(--gold)","\uD83D\uDD25"],[`${Object.keys(data.testScores).length}/28`,"TESTS","var(--cyan)","\uD83D\uDCDD"],[`${stats.completedChapters}/${totalCh}`,"CHAPTERS","var(--g)","\uD83D\uDCDA"],["\u26A0"+backlogs,"BACKLOG","var(--red)","\uD83D\uDD34"],[`${Math.round(data.focusHours)}h`,"FOCUS","var(--pur)","\u23F1"]].map(([v,l,c,ic])=>(
+          React.createElement(Card, { key: l, style: {textAlign:"center",padding:"14px 8px",borderColor:c+"33"},}
+            , React.createElement('div', { style: {fontSize:20,marginBottom:4},}, ic)
+            , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:18,color:c,fontWeight:900},}, v)
+            , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginTop:2},}, l)
+          )
+        ))
+      )
+
+      /* Predicted */
+      , predicted&&(
+        React.createElement(Card, { glow: true, style: {marginBottom:14,textAlign:"center"},}
+          , React.createElement('div', { style: {fontSize:10,fontFamily:"var(--mono)",color:"var(--t3)",letterSpacing:2},}, "AI PREDICTED NEET SCORE"   )
+          , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:44,color:predicted>=650?"var(--g)":predicted>=550?"var(--gold)":"var(--red)",margin:"6px 0",animation:"glow 2.5s ease-in-out infinite"},}, predicted)
+          , React.createElement(PBar, { value: predicted, max: 720, color: predicted>=650?"var(--g)":"var(--gold)", h: 8,})
+          , React.createElement('div', { style: {fontSize:12,color:"var(--t2)",marginTop:8},}, predicted>=700?"\uD83C\uDFAF AIR-1 Zone! Maintain momentum.":predicted>=600?"\uD83D\uDE80 Good! Need "+(700-predicted)+" more points.":"\u26A1 Focus up! Gap of "+(700-predicted)+" points to 700.")
+        )
+      )
+
+      /* Backlog alert */
+      , backlogs>0&&(
+        React.createElement(Card, { style: {marginBottom:14,borderColor:"var(--red)66",background:"rgba(255,51,51,.06)"},}
+          , React.createElement('div', { style: {color:"var(--red)",fontFamily:"var(--mono)",fontSize:12,marginBottom:8},}, "\u26A0 " , backlogs, " CHAPTER" , backlogs>1?"S":"", " OVERDUE" )
+          , stats.upcomingDeadlines.filter(d=>d.diff<0).slice(0,3).map(d=>{
+            const [subj,ch]=d.key.split("::");
+            return React.createElement('div', { key: d.key, style: {fontSize:12,color:"var(--t2)",marginBottom:4},}, "* " , ch, " (" , subj, ") - was due before "     , d.testId);
+          })
+          , React.createElement(Btn, { size: "sm", style: {marginTop:8}, onClick: ()=>setTab("deadlines"),}, "VIEW ALL BACKLOGS ->"   )
+        )
+      )
+
+      /* Upcoming */
+      , stats.upcomingDeadlines.filter(d=>d.diff>=0).length>0&&(
+        React.createElement(Card, { style: {marginBottom:14,borderColor:"var(--gold)44"},}
+          , React.createElement('div', { style: {fontSize:11,color:"var(--gold)",fontFamily:"var(--mono)",marginBottom:8},}, "\u23F0 UPCOMING CHAPTER DEADLINES"   )
+          , stats.upcomingDeadlines.filter(d=>d.diff>=0).slice(0,4).map(d=>{
+            const [subj,ch]=d.key.split("::");
+            return React.createElement('div', { key: d.key, style: {fontSize:12,color:"var(--t2)",marginBottom:4,display:"flex",justifyContent:"space-between"},}
+              , React.createElement('span', null, "* " , ch, " (" , subj, ")")
+              , React.createElement('span', { style: {color:d.diff<=3?"var(--red)":d.diff<=7?"var(--gold)":"var(--t3)",fontFamily:"var(--mono)",fontSize:11},}, d.diff===0?"TODAY":d.diff+"d left")
+            );
+          })
+        )
+      )
+
+      /* Next test */
+      , next&&(
+        React.createElement(Card, { style: {marginBottom:14},}
+          , React.createElement('div', { style: {fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:6},}, "NEXT TEST" )
+          , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center"},}
+            , React.createElement('div', null, React.createElement('span', { style: {fontFamily:"var(--display)",color:"var(--g)",fontSize:15},}, next.id), React.createElement('span', { style: {color:"var(--t3)",fontSize:12,marginLeft:10},}, next.dates))
+            , React.createElement(Btn, { size: "sm", onClick: ()=>setTab("tests"),}, "LOG SCORE" )
+          )
+        )
+      )
+
+      /* AI Daily Briefing */
+      , (()=>{
+        const brief=_optionalChain([data, 'access', _15 => _15.aiInsights, 'optionalAccess', _16 => _16.dailyBrief]);
+        return (
+          React.createElement(Card, { style: {marginBottom:14,borderColor:"var(--pur)44",background:"rgba(170,68,255,.04)"}, glow: !!brief,}
+            , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:brief?8:0},}
+              , React.createElement('div', { style: {fontSize:10,color:"var(--pur)",fontFamily:"var(--mono)",letterSpacing:2},}, "\uD83E\uDD16 ARIA DAILY BRIEF"   )
+              , React.createElement(Btn, { size: "sm", variant: "cyan", onClick: async()=>{
+                const ctx=buildDataContext(data);
+                const nextTest=TESTS.find(t=>!_optionalChain([data, 'access', _17 => _17.testScores, 'optionalAccess', _18 => _18[t.id]]));
+                const sys=`You are ARIA, a NEET 2028 mentor. Give a sharp 2-3 sentence daily briefing. Be specific about the student's actual numbers. End with ONE action for today. No fluff.`;
+                const prompt=`Student data: streak:${ctx.streak}d, completed:${ctx.completedKeys.length} chapters, backlog:${ctx.backlog}, scores:${ctx.scores}, subject avg:${ctx.subAvg}, focus:${ctx.focusHours}h, next test:${nextTest?nextTest.id+"("+nextTest.dates+")":"none"}. Give today's briefing.`;
+                try{
+                  const reply=await callAI(sys,prompt);
+                  updateData({aiInsights:{...(data.aiInsights||{}),dailyBrief:reply,briefDate:new Date().toDateString()}});
+                }catch(e){updateData({aiInsights:{...(data.aiInsights||{}),dailyBrief:"API key not set or error. Go to ARIA tab and add your Groq API key (free from console.groq.com)",briefDate:new Date().toDateString()}});}
+              },}, _optionalChain([data, 'access', _19 => _19.aiInsights, 'optionalAccess', _20 => _20.briefDate])===new Date().toDateString()?"\u21BA REFRESH":"GET BRIEF")
+            )
+            , brief
+              ? React.createElement('div', { style: {fontSize:13,color:"var(--t2)",lineHeight:1.7,fontFamily:"var(--body)"},}, brief)
+              : React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)"},}, "Tap to get ARIA's personalized briefing for today"       )
+            
+          )
+        );
+      })()
+
+      /* Today tasks preview */
+      , (()=>{
+        const todayStr=new Date().toISOString().split("T")[0];
+        const todayTasks=(data.tasks||[]).filter(t=>!t.done&&(!t.dueDate||t.dueDate===todayStr));
+        const doneToday=(data.tasks||[]).filter(t=>t.done&&t.completedDate===new Date().toDateString()).length;
+        if((data.tasks||[]).length===0) return null;
+        return (
+          React.createElement(Card, { style: {marginBottom:14,borderColor:"var(--cyan)44"},}
+            , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8},}
+              , React.createElement('div', { style: {fontSize:11,color:"var(--cyan)",fontFamily:"var(--mono)"},}, "TODAY'S TASKS" )
+              , React.createElement(Btn, { size: "sm", variant: "cyan", onClick: ()=>setTab("todo"),}, "VIEW ALL" )
+            )
+            , todayTasks.length===0
+              ? React.createElement('div', { style: {fontSize:12,color:"var(--g)",fontFamily:"var(--mono)"},}, "All tasks done! "   , doneToday, " completed today"  )
+              : todayTasks.slice(0,3).map(t=>(
+                React.createElement('div', { key: t.id, style: {fontSize:12,color:"var(--t2)",marginBottom:3,display:"flex",alignItems:"center",gap:6},}
+                  , React.createElement('span', { style: {color:t.priority==="high"?"var(--red)":t.priority==="med"?"var(--gold)":"var(--t3)",fontSize:10},}, "\u25CF")
+                  , t.text, t.subject?" ["+t.subject+"]":""
+                )
+              ))
+            
+            , todayTasks.length>3&&React.createElement('div', { style: {fontSize:11,color:"var(--t3)",marginTop:4},}, "+", todayTasks.length-3, " more pending"  )
+          )
+        );
+      })()
+
+      /* Quick actions */
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:8},}
+        , [["\u23F1 FOCUS","pomodoro","var(--g)"],["\u2705 TO-DO","todo","var(--cyan)"],["\uD83E\uDD16 ARIA","ai","var(--pur)"],["\uD83D\uDCCA STATS","analytics","var(--gold)"]].map(([l,t,c])=>(
+          React.createElement(Btn, { key: t, onClick: ()=>setTab(t), style: {color:c,borderColor:c,width:"100%"},}, l)
+        ))
+      )
+    )
+  );
+}
+
+// - TEST PLANNER (subject-wise scoring) -
+function TestPlanner({data,updateData}){
+  const [sel,setSel]=useState(null);
+  const [inputs,setInputs]=useState({physics:"",chemistry:"",botany:"",zoology:""});
+  const [filter,setFilter]=useState("ALL");
+  const [showSurprise,setShowSurprise]=useState(false);
+  const [sp,setSp]=useState({title:"",date:"",maxMarks:"",obtained:"",subject:"",note:""});
+
+  const typeColors={PT:"var(--g)",TE:"var(--cyan)",NRT:"var(--pur)",AIATS:"var(--gold)"};
+  const filtered=filter==="ALL"?TESTS:TESTS.filter(t=>t.type===filter);
+
+  const saveScore=(testId,maxMarks)=>{
+    const isPT = maxMarks===240;
+    const ph=parseFloat(inputs.physics)||0, ch=parseFloat(inputs.chemistry)||0;
+    const bo=parseFloat(inputs.botany)||0, zo=parseFloat(inputs.zoology)||0;
+    const total=ph+ch+bo+zo;
+    const pct=Math.round((total/maxMarks)*100);
+    const existing=data.testScores||{};
+    const newScores={...existing,[testId]:{physics:ph,chemistry:ch,botany:bo,zoology:zo,total,percentage:pct,maxMarks}};
+    updateData({testScores:newScores});
+    setInputs({physics:"",chemistry:"",botany:"",zoology:""});
+    setSel(null);
+  };
+
+  const saveSurprise=()=>{
+    if(!sp.title||!sp.maxMarks||sp.obtained==="") return;
+    const t=[...data.surpriseTests||[],{id:Date.now(),...sp,maxMarks:parseInt(sp.maxMarks),obtained:parseFloat(sp.obtained),percentage:Math.round((parseFloat(sp.obtained)/parseInt(sp.maxMarks))*100)}];
+    updateData({surpriseTests:t});
+    setSp({title:"",date:"",maxMarks:"",obtained:"",subject:"",note:""});
+    setShowSurprise(false);
+  };
+
+  const scoreColor=pct=>pct>=90?"var(--g)":pct>=75?"var(--gold)":pct>=60?"var(--ora)":"var(--red)";
+  const subjectMax=(t)=>t.maxMarks===240?60:180;
+
+  return (
+    React.createElement('div', { className: "fi",}
+      , React.createElement(Hdr, { title: "TEST PLANNER" , sub: "AAKASH PHASE-01 * 28 OFFICIAL TESTS + SURPRISE TESTS"        ,})
+
+      , React.createElement('div', { style: {display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"},}
+        , ["ALL","PT","TE","NRT","AIATS"].map(f=>(
+          React.createElement(Btn, { key: f, size: "sm", variant: filter===f?"filled":"ghost", onClick: ()=>setFilter(f),
+            style: {color:f==="ALL"?"var(--g)":typeColors[f],borderColor:f==="ALL"?"var(--g)":typeColors[f]},}, f)
+        ))
+        , React.createElement(Btn, { size: "sm", variant: "gold", onClick: ()=>setShowSurprise(true),}, "+ SURPRISE TEST"  )
+      )
+
+      /* Summary */
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:16},}
+        , [["PT","8"],["TE","6"],["NRT","6"],["AIATS","8"]].map(([t,n])=>(
+          React.createElement(Card, { key: t, style: {padding:"10px 8px",textAlign:"center",borderColor:typeColors[t]+"44"},}
+            , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:18,color:typeColors[t]},}, Object.keys(data.testScores||{}).filter(k=>k.startsWith(t)).length, "/", n)
+            , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"},}, t, " DONE" )
+          )
+        ))
+      )
+
+      /* Surprise modal */
+      , showSurprise&&(
+        React.createElement(Card, { style: {marginBottom:16,borderColor:"var(--gold)66"},}
+          , React.createElement('div', { style: {fontSize:12,color:"var(--gold)",fontFamily:"var(--mono)",marginBottom:12},}, "+ ADD SURPRISE TEST"   )
+          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"2fr 1fr",gap:8,marginBottom:8},}
+            , React.createElement('input', { placeholder: "Test title / name"   , value: sp.title, onChange: e=>setSp({...sp,title:e.target.value}),
+              style: {background:"var(--bg3)",border:"1px solid var(--border2)",color:"var(--text)",borderRadius:4,padding:8,fontFamily:"var(--body)",fontSize:13},})
+            , React.createElement('input', { type: "date", value: sp.date, onChange: e=>setSp({...sp,date:e.target.value}),
+              style: {background:"var(--bg3)",border:"1px solid var(--border2)",color:"var(--text)",borderRadius:4,padding:8,fontFamily:"var(--mono)",fontSize:12},})
+          )
+          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:8},}
+            , React.createElement('input', { placeholder: "Max marks" , value: sp.maxMarks, onChange: e=>setSp({...sp,maxMarks:e.target.value}),
+              type: "number", style: {background:"var(--bg3)",border:"1px solid var(--border2)",color:"var(--text)",borderRadius:4,padding:8,fontFamily:"var(--mono)",fontSize:13},})
+            , React.createElement('input', { placeholder: "Marks obtained" , value: sp.obtained, onChange: e=>setSp({...sp,obtained:e.target.value}),
+              type: "number", style: {background:"var(--bg3)",border:"1px solid var(--border2)",color:"var(--text)",borderRadius:4,padding:8,fontFamily:"var(--mono)",fontSize:13},})
+            , React.createElement('input', { placeholder: "Subject (optional)" , value: sp.subject, onChange: e=>setSp({...sp,subject:e.target.value}),
+              style: {background:"var(--bg3)",border:"1px solid var(--border2)",color:"var(--text)",borderRadius:4,padding:8,fontFamily:"var(--body)",fontSize:13},})
+          )
+          , React.createElement('input', { placeholder: "Notes (optional)" , value: sp.note, onChange: e=>setSp({...sp,note:e.target.value}),
+            style: {width:"100%",background:"var(--bg3)",border:"1px solid var(--border2)",color:"var(--text)",borderRadius:4,padding:8,fontFamily:"var(--body)",fontSize:13,marginBottom:8},})
+          , React.createElement('div', { style: {display:"flex",gap:8},}
+            , React.createElement(Btn, { variant: "filled", onClick: saveSurprise, style: {flex:1},}, "SAVE")
+            , React.createElement(Btn, { variant: "ghost", onClick: ()=>setShowSurprise(false), style: {flex:1},}, "CANCEL")
+          )
+        )
+      )
+
+      /* Surprise test list */
+      , (data.surpriseTests||[]).length>0&&(
+        React.createElement(Card, { style: {marginBottom:14,borderColor:"var(--gold)33"},}
+          , React.createElement('div', { style: {fontSize:11,color:"var(--gold)",fontFamily:"var(--mono)",marginBottom:10},}, "SURPRISE TESTS ("  , data.surpriseTests.length, ")")
+          , data.surpriseTests.map(st=>(
+            React.createElement('div', { key: st.id, style: {display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid var(--border)"},}
+              , React.createElement('div', null
+                , React.createElement('span', { style: {fontSize:13,color:"var(--text)",fontWeight:600},}, st.title)
+                , st.subject&&React.createElement(Tag, { color: "var(--cyan)",}, st.subject)
+                , st.date&&React.createElement('span', { style: {fontSize:11,color:"var(--t3)",marginLeft:6,fontFamily:"var(--mono)"},}, st.date)
+              )
+              , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:16,color:scoreColor(st.percentage)},}, st.obtained, "/", st.maxMarks, " " , React.createElement('span', { style: {fontSize:11},}, "(", st.percentage, "%)"))
+            )
+          ))
+        )
+      )
+
+      /* Official tests */
+      , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:8},}
+        , filtered.map(test=>{
+          const sc=_optionalChain([data, 'access', _21 => _21.testScores, 'optionalAccess', _22 => _22[test.id]]);
+          const isPT=test.maxMarks===240;
+          const subMax=isPT?60:180;
+          return (
+            React.createElement(Card, { key: test.id, style: {cursor:"pointer",borderColor:sel===test.id?"var(--g)":"var(--border)"},}
+              , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center"}, onClick: ()=>setSel(sel===test.id?null:test.id),}
+                , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:8},}
+                  , React.createElement(Tag, { color: typeColors[test.type],}, test.type)
+                  , React.createElement('span', { style: {fontFamily:"var(--display)",fontSize:14,color:"var(--g)"},}, test.id)
+                )
+                , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:10},}
+                  , sc&&React.createElement('span', { style: {fontFamily:"var(--display)",fontSize:16,color:scoreColor(sc.percentage)},}, sc.total, React.createElement('span', { style: {fontSize:11,color:"var(--t3)"},}, "/", test.maxMarks))
+                  , React.createElement('span', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)"},}, test.dates)
+                  , React.createElement('span', { style: {color:"var(--t3)",fontSize:11},}, sel===test.id?"\u25B2":"\u25BC")
+                )
+              )
+
+              , sc&&(
+                React.createElement('div', { style: {marginTop:8,display:"flex",gap:8,flexWrap:"wrap"},}
+                  , ["physics","chemistry","botany","zoology"].map(sub=>(
+                    React.createElement('div', { key: sub, style: {background:"var(--bg3)",borderRadius:4,padding:"4px 8px",fontSize:12},}
+                      , React.createElement('span', { style: {color:"var(--t3)",marginRight:4},}, sub[0].toUpperCase()+sub.slice(1,4), ":")
+                      , React.createElement('span', { style: {color:scoreColor(Math.round((sc[sub]/subMax)*100)),fontFamily:"var(--mono)"},}, sc[sub], "/", subMax)
+                    )
+                  ))
+                )
+              )
+
+              , sel===test.id&&(
+                React.createElement('div', { className: "si", style: {marginTop:14,borderTop:"1px solid var(--border)",paddingTop:14},}
+                  /* Syllabus */
+                  , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14},}
+                    , [["Physics",test.physics,"var(--cyan)"],["Chemistry",test.chemistry,"var(--g)"],["Botany",test.botany,"var(--g4)"],["Zoology",test.zoology,"var(--pur)"]].map(([s,c,col])=>(
+                      React.createElement('div', { key: s, style: {background:"var(--bg3)",borderRadius:5,padding:10,borderLeft:`3px solid ${col}`},}
+                        , React.createElement('div', { style: {fontSize:10,color:col,fontFamily:"var(--mono)",marginBottom:4},}, s.toUpperCase(), " \u00B7 "  , subMax, "M")
+                        , React.createElement('div', { style: {fontSize:11,color:"var(--t2)",lineHeight:1.5},}, c)
+                      )
+                    ))
+                  )
+                  /* Score inputs */
+                  , React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:8},}, "ENTER SUBJECT-WISE SCORES (max "    , subMax, " each)" )
+                  , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10},}
+                    , ["physics","chemistry","botany","zoology"].map((sub,i)=>(
+                      React.createElement('div', { key: sub,}
+                        , React.createElement('div', { style: {fontSize:10,color:["var(--cyan)","var(--g)","var(--g4)","var(--pur)"][i],fontFamily:"var(--mono)",marginBottom:4},}, sub.toUpperCase().slice(0,4))
+                        , React.createElement('input', { type: "number", placeholder: `0-${subMax}`, value: inputs[sub],
+                          onChange: e=>setInputs({...inputs,[sub]:e.target.value}),
+                          style: {width:"100%",background:"var(--bg3)",border:`1px solid ${["var(--cyan)","var(--g)","var(--g4)","var(--pur)"][i]}66`,borderRadius:4,padding:"8px 6px",color:"var(--g)",fontFamily:"var(--mono)",fontSize:14,textAlign:"center"},})
+                      )
+                    ))
+                  )
+                  , React.createElement('div', { style: {display:"flex",gap:8,alignItems:"center"},}
+                    , React.createElement('div', { style: {flex:1,fontSize:12,color:"var(--t2)",fontFamily:"var(--mono)"},}, "Total: "
+                       , (parseFloat(inputs.physics)||0)+(parseFloat(inputs.chemistry)||0)+(parseFloat(inputs.botany)||0)+(parseFloat(inputs.zoology)||0), "/", test.maxMarks
+                    )
+                    , React.createElement(Btn, { variant: "filled", onClick: ()=>saveScore(test.id,test.maxMarks),}, "SAVE SCORE" )
+                    , sc&&React.createElement(Btn, { variant: "danger", size: "sm", onClick: ()=>{const ns={...data.testScores};delete ns[test.id];updateData({testScores:ns});},}, "CLEAR")
+                  )
+                )
+              )
+            )
+          );
+        })
+      )
+    )
+  );
+}
+
+// - CHAPTER ROADMAP + DEADLINES -
+function ChapterRoadmap({data,updateData}){
+  const [subj,setSubj]=useState("Physics");
+  const statuses=["not-started","in-progress","completed","revised"];
+  const sColors={"not-started":"var(--t3)","in-progress":"var(--gold)",completed:"var(--g)",revised:"var(--cyan)"};
+  const sIcons={"not-started":"\u25CB","in-progress":"\u25D0",completed:"\u25CF",revised:"\u2605"};
+
+  const set=(s,c,status)=>{
+    const key=`${s}::${c}`;
+    updateData({chapters:{...data.chapters,[key]:status}});
+  };
+
+  const subjColors={Physics:"var(--cyan)",Chemistry:"var(--g)",Botany:"var(--g4)",Zoology:"var(--pur)"};
+  const today=new Date(); today.setHours(0,0,0,0);
+
+  return (
+    React.createElement('div', { className: "fi",}
+      , React.createElement(Hdr, { title: "CHAPTER ROADMAP" , sub: "TRACK EVERY CHAPTER * DEADLINES TIED TO TEST SYLLABUS"        ,})
+      , React.createElement('div', { style: {display:"flex",gap:6,marginBottom:18,flexWrap:"wrap"},}
+        , Object.keys(CHAPTERS).map(s=>(
+          React.createElement(Btn, { key: s, size: "sm", variant: subj===s?"filled":"ghost", onClick: ()=>setSubj(s),
+            style: {color:subjColors[s],borderColor:subjColors[s],flex:1},}, s.toUpperCase().slice(0,4))
+        ))
+      )
+
+      /* Summary for active subject */
+      , (()=>{
+        const chs=CHAPTERS[subj];
+        const done=chs.filter(c=>data.chapters[`${subj}::${c}`]==="completed"||data.chapters[`${subj}::${c}`]==="revised").length;
+        const inp=chs.filter(c=>data.chapters[`${subj}::${c}`]==="in-progress").length;
+        const overdue=chs.filter(c=>{
+          const st=data.chapters[`${subj}::${c}`]||"not-started";
+          if(st==="completed"||st==="revised") return false;
+          const dl=getChapterDeadline(`${subj}::${c}`);
+          return dl&&dl.date<today;
+        }).length;
+        return (
+          React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:14},}
+            , [["DONE",done,"var(--g)"],["PROGRESS",inp,"var(--gold)"],["BACKLOG",overdue,"var(--red)"],["LEFT",chs.length-done-inp,"var(--t3)"]].map(([l,v,c])=>(
+              React.createElement(Card, { key: l, style: {padding:"10px 6px",textAlign:"center",borderColor:c+"44"},}
+                , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:18,color:c},}, v)
+                , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"},}, l)
+              )
+            ))
+          )
+        );
+      })()
+
+      , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:7},}
+        , CHAPTERS[subj].map((ch,i)=>{
+          const key=`${subj}::${ch}`;
+          const status=data.chapters[key]||"not-started";
+          const dl=getChapterDeadline(key);
+          let dlInfo=null, dlColor="var(--t3)";
+          if(dl){
+            const dlDate=new Date(dl.date); dlDate.setHours(0,0,0,0);
+            const diff=Math.ceil((dlDate-today)/86400000);
+            if(status!=="completed"&&status!=="revised"){
+              if(diff<0){dlInfo=`\u26A0 OVERDUE (${dl.testId})`;dlColor="var(--red)";}
+              else if(diff===0){dlInfo=`TODAY! (${dl.testId})`;dlColor="var(--red)";}
+              else if(diff<=3){dlInfo=`${diff}d left (${dl.testId})`;dlColor="var(--red)";}
+              else if(diff<=7){dlInfo=`${diff}d left (${dl.testId})`;dlColor="var(--gold)";}
+              else{dlInfo=`${diff}d -> ${dl.testId}`;dlColor="var(--t3)";}
+            } else {
+              dlInfo=`\u2713 Done before ${dl.testId}`;dlColor="var(--g)";
+            }
+          }
+          return (
+            React.createElement(Card, { key: ch, style: {padding:"11px 14px",borderColor:sColors[status]+"55"},}
+              , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center"},}
+                , React.createElement('div', { style: {flex:1},}
+                  , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:8},}
+                    , React.createElement('span', { style: {fontFamily:"var(--mono)",color:"var(--t3)",fontSize:11},}, String(i+1).padStart(2,"0"))
+                    , React.createElement('span', { style: {fontSize:14,color:"var(--text)",fontWeight:600},}, ch)
+                  )
+                  , dlInfo&&React.createElement('div', { style: {fontSize:10,color:dlColor,fontFamily:"var(--mono)",marginTop:3,marginLeft:20},}, dlInfo)
+                )
+                , React.createElement('div', { style: {display:"flex",gap:5},}
+                  , statuses.map(s=>(
+                    React.createElement('button', { key: s, onClick: ()=>set(subj,ch,s), title: s,
+                      style: {width:22,height:22,borderRadius:"50%",cursor:"pointer",border:`2px solid ${status===s?sColors[s]:"var(--border)"}`,background:status===s?sColors[s]+"33":"transparent",color:sColors[s],fontSize:9},}
+                      , sIcons[s]
+                    )
+                  ))
+                )
+              )
+            )
+          );
+        })
+      )
+    )
+  );
+}
+
+// - DEADLINE / BACKLOG VIEW -
+function DeadlineView({data,updateData}){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const allKeys=Object.entries(CHAPTERS).flatMap(([s,chs])=>chs.map(c=>({key:`${s}::${c}`,subj:s,ch:c})));
+
+  const items=allKeys.map(({key,subj,ch})=>{
+    const status=data.chapters[key]||"not-started";
+    const dl=getChapterDeadline(key);
+    if(!dl) return null;
+    const dlDate=new Date(dl.date); dlDate.setHours(0,0,0,0);
+    const diff=Math.ceil((dlDate-today)/86400000);
+    return {key,subj,ch,status,dlDate,diff,testId:dl.testId};
+  }).filter(Boolean).sort((a,b)=>a.diff-b.diff);
+
+  const overdue=items.filter(i=>i.diff<0&&i.status!=="completed"&&i.status!=="revised");
+  const today_=items.filter(i=>i.diff===0&&i.status!=="completed"&&i.status!=="revised");
+  const week=items.filter(i=>i.diff>0&&i.diff<=7&&i.status!=="completed"&&i.status!=="revised");
+  const upcoming=items.filter(i=>i.diff>7&&i.diff<=30&&i.status!=="completed"&&i.status!=="revised");
+  const done=items.filter(i=>i.status==="completed"||i.status==="revised");
+
+  const markDone=(key)=>updateData({chapters:{...data.chapters,[key]:"completed"}});
+
+  const renderGroup=(title,list,color)=>list.length===0?null:(
+    React.createElement('div', { style: {marginBottom:20},}
+      , React.createElement('div', { style: {fontSize:11,color,fontFamily:"var(--mono)",marginBottom:10,letterSpacing:2},}, title, " (" , list.length, ")")
+      , list.map(it=>(
+        React.createElement(Card, { key: it.key, style: {marginBottom:7,borderColor:color+"44",padding:"12px 14px"},}
+          , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center"},}
+            , React.createElement('div', null
+              , React.createElement('span', { style: {fontWeight:700,fontSize:13,color:"var(--text)"},}, it.ch)
+              , React.createElement(Tag, { color: "var(--t3)", style: {marginLeft:8},}, it.subj)
+              , React.createElement('div', { style: {fontSize:10,color,fontFamily:"var(--mono)",marginTop:3},}
+                , it.diff<0?`OVERDUE ${Math.abs(it.diff)}d ago`:it.diff===0?"DUE TODAY":`${it.diff}d left`, " -> "  , it.testId
+              )
+            )
+            , it.status!=="completed"&&it.status!=="revised"&&(
+              React.createElement(Btn, { size: "sm", variant: "filled", onClick: ()=>markDone(it.key),}, "\u2713 DONE" )
+            )
+          )
+        )
+      ))
+    )
+  );
+
+  return (
+    React.createElement('div', { className: "fi",}
+      , React.createElement(Hdr, { title: "DEADLINE TRACKER" , sub: "CHAPTER DEADLINES BASED ON TEST SYLLABUS"     ,})
+
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:20},}
+        , [[overdue.length,"BACKLOG","var(--red)"],[today_.length,"TODAY","var(--red)"],[week.length,"THIS WEEK","var(--gold)"],[done.length,"CLEARED","var(--g)"]].map(([v,l,c])=>(
+          React.createElement(Card, { key: l, style: {padding:"10px 6px",textAlign:"center",borderColor:c+"44"},}
+            , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:20,color:c},}, v)
+            , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"},}, l)
+          )
+        ))
+      )
+
+      , renderGroup("\uD83D\uDD34 BACKLOG - OVERDUE",overdue,"var(--red)")
+      , renderGroup("\uD83D\uDD34 DUE TODAY",today_,"var(--red)")
+      , renderGroup("\u26A1 DUE THIS WEEK",week,"var(--gold)")
+      , renderGroup("\uD83D\uDCC5 NEXT 30 DAYS",upcoming,"var(--cyan)")
+      , renderGroup("\u2713 CLEARED",done.slice(0,10),"var(--g)")
+
+      , overdue.length===0&&today_.length===0&&week.length===0&&(
+        React.createElement(Card, { style: {textAlign:"center",padding:40},}
+          , React.createElement('div', { style: {fontSize:36,marginBottom:12},}, "\u2705")
+          , React.createElement('div', { style: {color:"var(--g)",fontFamily:"var(--mono)"},}, "No backlog! You're on track. \uD83C\uDFAF"     )
+        )
+      )
+    )
+  );
+}
+
+// - REVISION (AI-POWERED) -
+function RevisionSystem({data,updateData}){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const [aiPlan,setAiPlan]=useState(_optionalChain([data, 'access', _23 => _23.aiInsights, 'optionalAccess', _24 => _24.revisionPlan])||null);
+  const [aiLoading,setAiLoading]=useState(false);
+  const [aiError,setAiError]=useState("");
+
+  // Base queue (algorithmic fallback)
+  const queue = useMemo(()=>{
+    const completedKeys=Object.entries(data.chapters||{})
+      .filter(([,v])=>v==="completed"||v==="revised").map(([k])=>k);
+    return completedKeys.map(key=>{
+      const [subj,ch]=key.split("::");
+      const log=_optionalChain([data, 'access', _25 => _25.revisionLog, 'optionalAccess', _26 => _26[key]])||[];
+      const lastRev=log.length?new Date(log[log.length-1].date):null;
+      const daysSince=lastRev?Math.ceil((today-lastRev)/86400000):9999;
+      const intervals=[1,3,7,14,30,60,90];
+      const revCount=log.length;
+      const nextInterval=intervals[Math.min(revCount,intervals.length-1)];
+      const daysUntilNext=lastRev?nextInterval-daysSince:0;
+      const isDue=daysUntilNext<=0;
+      const priority=isDue?Math.abs(daysUntilNext)+100:daysUntilNext;
+      return {key,subj,ch,revCount,daysSince,nextInterval,daysUntilNext,isDue,priority,lastRev};
+    }).sort((a,b)=>a.priority-b.priority);
+  },[data.chapters,data.revisionLog]);
+
+  const due=queue.filter(r=>r.isDue);
+  const upcoming=queue.filter(r=>!r.isDue&&r.daysUntilNext<=7);
+  const totalCompleted=Object.values(data.chapters||{}).filter(v=>v==="completed"||v==="revised").length;
+
+  const markRevised=(key)=>{
+    const log=data.revisionLog||{};
+    const entry={date:today.toISOString(),type:"completed"};
+    const newLog={...log,[key]:[...(log[key]||[]),entry]};
+    const newChapters={...data.chapters,[key]:"revised"};
+    // Clear AI plan so it regenerates fresh next time
+    const newInsights={...(data.aiInsights||{}),revisionPlan:null};
+    updateData({revisionLog:newLog,chapters:newChapters,aiInsights:newInsights});
+  };
+
+  const getAIPlan=async()=>{
+    if(totalCompleted===0){setAiError("Complete some chapters first!");return;}
+    setAiLoading(true);setAiError("");
+    const ctx=buildDataContext(data);
+    const nextTests=TESTS.filter(t=>!_optionalChain([data, 'access', _27 => _27.testScores, 'optionalAccess', _28 => _28[t.id]])).slice(0,3).map(t=>`${t.id}(${t.dates})`).join(", ")||"none";
+
+    const system=`You are an expert NEET 2028 revision strategist. You analyze student data and return a JSON revision plan. 
+Respond ONLY with valid JSON \u2014 no markdown, no explanation, no backticks.
+Format: {"priority_now":["chapterKey1","chapterKey2"...],"priority_week":["chapterKey3"...],"skip_today":["chapterKey4"...],"reasoning":"2-3 lines explaining your strategy","daily_tip":"one sharp action tip for today"}
+chapterKeys are in format "Subject::Chapter Name" exactly as provided.`;
+
+    const prompt=`Student data:
+- Completed chapters in revision queue: ${ctx.revLog||"none yet"}
+- Subject completion: ${ctx.subjPct}
+- Subject avg scores: ${ctx.subAvg}  
+- Backlog chapters (overdue): ${ctx.backlog}
+- Upcoming tests: ${nextTests}
+- Streak: ${ctx.streak} days | Focus hours: ${ctx.focusHours}h
+- Due for revision NOW (by algorithm): ${due.map(r=>r.key).join(", ")||"none"}
+
+Prioritize revision based on:
+1. Upcoming test syllabus \u2014 chapters in next test get highest priority
+2. Subject weakness (low % avg) \u2014 weak subjects need more revision cycles
+3. Time since last revision \u2014 chapters not revised in long time
+4. Spaced repetition logic \u2014 don't over-revise recently done chapters
+5. Backlog chapters must be studied BEFORE revision of already-done ones
+
+Return the JSON plan now.`;
+
+    try{
+      const raw=await callAI(system,prompt);
+      const clean=raw.replace(/```json|```/g,"").trim();
+      const parsed=JSON.parse(clean);
+      const plan={...parsed,generatedAt:new Date().toLocaleString()};
+      setAiPlan(plan);
+      updateData({aiInsights:{...(data.aiInsights||{}),revisionPlan:plan}});
+    }catch(e){
+      setAiError("AI analysis failed. Check connection and retry.");
+    }
+    setAiLoading(false);
+  };
+
+  // Merge AI priorities with queue data
+  const getAIQueue=()=>{
+    if(!aiPlan) return {now:due,week:upcoming};
+    const keyToItem={};
+    queue.forEach(r=>{keyToItem[r.key]=r;});
+    const now=(aiPlan.priority_now||[]).map(k=>keyToItem[k]).filter(Boolean);
+    const week=(aiPlan.priority_week||[]).map(k=>keyToItem[k]).filter(Boolean);
+    // Add any due items AI missed
+    due.forEach(r=>{if(!now.find(x=>x.key===r.key)&&!(aiPlan.skip_today||[]).includes(r.key))now.push(r);});
+    return {now,week};
+  };
+
+  const {now:aiNow,week:aiWeek}=getAIQueue();
+
+  return (
+    React.createElement('div', { className: "fi",}
+      , React.createElement(Hdr, { title: "AI REVISION PLANNER"  , sub: "CLAUDE AI PRIORITIZES YOUR REVISION ORDER"     ,})
+
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14},}
+        , [[(aiPlan?aiNow:due).length,"REVISE NOW","var(--red)"],[(aiPlan?aiWeek:upcoming).length,"THIS WEEK","var(--gold)"],[totalCompleted,"IN QUEUE","var(--g)"]].map(([v,l,c])=>(
+          React.createElement(Card, { key: l, style: {padding:"10px 6px",textAlign:"center",borderColor:c+"44"},}
+            , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:22,color:c},}, v)
+            , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"},}, l)
+          )
+        ))
+      )
+
+      /* AI Analyze Button */
+      , React.createElement(Btn, { variant: "filled", onClick: getAIPlan, style: {width:"100%",marginBottom:12,fontSize:14},
+        disabled: aiLoading,}
+        , aiLoading?"\uD83E\uDD16 ARIA IS ANALYZING YOUR DATA...":"\uD83E\uDD16 GET AI REVISION PLAN"
+      )
+
+      , aiError&&React.createElement('div', { style: {color:"var(--red)",fontFamily:"var(--mono)",fontSize:12,marginBottom:10,textAlign:"center"},}, aiError)
+
+      /* AI Plan Card */
+      , aiPlan&&(
+        React.createElement(Card, { style: {marginBottom:16,borderColor:"var(--pur)66",background:"rgba(170,68,255,.04)"},}
+          , React.createElement('div', { style: {fontSize:10,color:"var(--pur)",fontFamily:"var(--mono)",marginBottom:8,letterSpacing:2},}, "\uD83E\uDD16 ARIA REVISION STRATEGY"   )
+          , React.createElement('div', { style: {fontSize:13,color:"var(--text)",lineHeight:1.7,marginBottom:10},}, aiPlan.reasoning)
+          , React.createElement('div', { style: {background:"var(--bg3)",borderRadius:6,padding:"8px 12px",borderLeft:"3px solid var(--gold)"},}
+            , React.createElement('div', { style: {fontSize:10,color:"var(--gold)",fontFamily:"var(--mono)",marginBottom:3},}, "TODAY'S TIP" )
+            , React.createElement('div', { style: {fontSize:13,color:"var(--t2)"},}, aiPlan.daily_tip)
+          )
+          , React.createElement('div', { style: {fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",marginTop:8},}, "Generated: " , aiPlan.generatedAt, " \u00B7 "  , React.createElement('span', { style: {color:"var(--pur)",cursor:"pointer"}, onClick: getAIPlan,}, "Refresh"))
+        )
+      )
+
+      , !aiPlan&&(
+        React.createElement(Card, { style: {marginBottom:14,background:"rgba(0,255,65,.03)",borderColor:"var(--g3)"},}
+          , React.createElement('div', { style: {fontSize:11,color:"var(--g)",fontFamily:"var(--mono)",marginBottom:6},}, "WITHOUT AI (ALGORITHM MODE)"   )
+          , React.createElement('div', { style: {fontSize:12,color:"var(--t2)",lineHeight:1.7},}, "Intervals: "
+             , React.createElement('span', { style: {color:"var(--gold)",fontFamily:"var(--mono)"},}, "1-3-7-14-30-60-90 days" ), ". Tap the button above to let ARIA reprioritize based on your weak subjects, upcoming tests, and scores."
+          )
+        )
+      )
+
+      , totalCompleted===0&&(
+        React.createElement('div', { style: {textAlign:"center",color:"var(--t3)",fontFamily:"var(--mono)",padding:40,fontSize:12},}, "Mark chapters COMPLETED in Roadmap"
+              , React.createElement('br', null), "to populate the revision queue."
+        )
+      )
+
+      /* REVISE NOW */
+      , (aiPlan?aiNow:due).length>0&&(
+        React.createElement(React.Fragment, null
+          , React.createElement('div', { style: {fontSize:11,color:"var(--red)",fontFamily:"var(--mono)",marginBottom:10,letterSpacing:2},}
+            , aiPlan?"\uD83E\uDD16 AI PRIORITY \u2014 REVISE NOW":"\u26A0 DUE FOR REVISION", " (" , (aiPlan?aiNow:due).length, ")"
+          )
+          , (aiPlan?aiNow:due).map((r,idx)=>(
+            React.createElement(Card, { key: r.key, style: {marginBottom:8,borderColor:"var(--red)44"},}
+              , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center"},}
+                , React.createElement('div', null
+                  , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:8},}
+                    , aiPlan&&React.createElement('span', { style: {fontFamily:"var(--mono)",color:"var(--pur)",fontSize:11},}, "#", idx+1)
+                    , React.createElement('span', { style: {fontWeight:700,fontSize:13,color:"var(--text)"},}, r.ch)
+                    , React.createElement(Tag, { color: "var(--t3)",}, r.subj)
+                  )
+                  , React.createElement('div', { style: {fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",marginTop:3},}, "Rev #"
+                     , r.revCount+1, " \u00B7 "  , r.daysSince===9999?"Never revised":r.daysSince+"d since last"
+                  )
+                )
+                , React.createElement(Btn, { size: "sm", variant: "filled", onClick: ()=>markRevised(r.key),}, "DONE \u2713" )
+              )
+            )
+          ))
+        )
+      )
+
+      /* THIS WEEK */
+      , (aiPlan?aiWeek:upcoming).length>0&&(
+        React.createElement(React.Fragment, null
+          , React.createElement('div', { style: {fontSize:11,color:"var(--gold)",fontFamily:"var(--mono)",marginBottom:10,marginTop:16,letterSpacing:2},}
+            , aiPlan?"\uD83E\uDD16 AI \u2014 DO THIS WEEK":"\uD83D\uDCC5 UPCOMING THIS WEEK", " (" , (aiPlan?aiWeek:upcoming).length, ")"
+          )
+          , (aiPlan?aiWeek:upcoming).map((r,idx)=>(
+            React.createElement(Card, { key: r.key, style: {marginBottom:7,borderColor:"var(--gold)33",opacity:.88},}
+              , React.createElement('div', { style: {display:"flex",justifyContent:"space-between"},}
+                , React.createElement('div', null
+                  , aiPlan&&React.createElement('span', { style: {fontFamily:"var(--mono)",color:"var(--pur)",fontSize:11,marginRight:6},}, "#", idx+1)
+                  , React.createElement('span', { style: {fontSize:13,color:"var(--text)"},}, r.ch)
+                  , React.createElement(Tag, { color: "var(--t3)",}, r.subj)
+                  , React.createElement('div', { style: {fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",marginTop:2},}
+                    , r.isDue?"Overdue":"In "+r.daysUntilNext+"d"
+                  )
+                )
+                , React.createElement(Btn, { size: "sm", variant: "ghost", onClick: ()=>markRevised(r.key),}, "REVISE")
+              )
+            )
+          ))
+        )
+      )
+
+      /* Rest of queue */
+      , queue.filter(r=>!r.isDue&&r.daysUntilNext>7).length>0&&(
+        React.createElement(React.Fragment, null
+          , React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:8,marginTop:16,letterSpacing:2},}, "FULL QUEUE" )
+          , queue.filter(r=>!r.isDue&&r.daysUntilNext>7).map(r=>(
+            React.createElement('div', { key: r.key, style: {display:"flex",justifyContent:"space-between",padding:"8px 12px",background:"var(--bg3)",borderRadius:5,marginBottom:5,borderLeft:"3px solid var(--border2)"},}
+              , React.createElement('span', { style: {fontSize:12,color:"var(--t2)"},}, r.ch, " " , React.createElement('span', { style: {color:"var(--t3)",fontSize:10},}, "(", r.subj, ")"))
+              , React.createElement('span', { style: {fontFamily:"var(--mono)",fontSize:11,color:"var(--t3)"},}, "Rev#", r.revCount, " \u00B7 in "   , r.daysUntilNext, "d")
+            )
+          ))
+        )
+      )
+    )
+  );
+}
+
+// - POMODORO -
+function Pomodoro({data,updateData}){
+  const [mode,setMode]=useState("work");
+  const [tl,setTl]=useState((_optionalChain([data, 'access', _29 => _29.pomodoroSettings, 'optionalAccess', _30 => _30.work])||25)*60);
+  const [running,setRunning]=useState(false);
+  const [sess,setSess]=useState(0);
+  const [todayMin,setTodayMin]=useState(0);
+  const ref=useRef();
+  const ps=data.pomodoroSettings||{work:25,shortBreak:5,longBreak:15};
+  const modes={work:ps.work*60,short:ps.shortBreak*60,long:ps.longBreak*60};
+  const mc={work:"var(--g)",short:"var(--cyan)",long:"var(--pur)"};
+  const ml={work:"FOCUS",short:"SHORT BREAK",long:"LONG BREAK"};
+
+  useEffect(()=>{
+    if(running){
+      ref.current=setInterval(()=>{
+        setTl(t=>{
+          if(t<=1){
+            clearInterval(ref.current);setRunning(false);
+            if(mode==="work"){
+              const ns=sess+1;setSess(ns);
+              const addH=ps.work/60;
+              updateData({focusHours:(data.focusHours||0)+addH});
+              setTodayMin(p=>p+ps.work);
+              const nm=ns%4===0?"long":"short";
+              setMode(nm); return modes[nm];
+            } else {setMode("work");return modes.work;}
+          }
+          return t-1;
+        });
+      },1000);
+    }
+    return()=>clearInterval(ref.current);
+  },[running,mode,sess]);
+
+  const sw=m=>{setMode(m);setRunning(false);setTl(modes[m]);clearInterval(ref.current);};
+  const mins=String(Math.floor(tl/60)).padStart(2,"0");
+  const secs=String(tl%60).padStart(2,"0");
+  const prog=1-tl/modes[mode];
+  const R=78; const C=2*Math.PI*R;
+
+  const motives=["ZERO DISTRACTIONS","EVERY SECOND COUNTS","AIR-1 IS THE GOAL","STAY IN THE ZONE","FOCUS IS A SUPERPOWER","THIS SESSION MATTERS"];
+  const [mi,setMi]=useState(0);
+  useEffect(()=>{const t=setInterval(()=>setMi(i=>(i+1)%motives.length),4000);return()=>clearInterval(t);},[]);
+
+  return (
+    React.createElement('div', { className: "fi",}
+      , React.createElement(Hdr, { title: "FOCUS ENGINE" , sub: "POMODORO TIMER" ,})
+      , React.createElement('div', { style: {display:"flex",gap:6,marginBottom:20},}
+        , [["work","FOCUS"],["short","S.BREAK"],["long","L.BREAK"]].map(([m,l])=>(
+          React.createElement(Btn, { key: m, size: "sm", variant: mode===m?"filled":"ghost", onClick: ()=>sw(m),
+            style: {flex:1,color:mc[m],borderColor:mc[m]},}, l)
+        ))
+      )
+      , React.createElement('div', { style: {display:"flex",flexDirection:"column",alignItems:"center",marginBottom:20},}
+        , React.createElement('div', { style: {position:"relative",width:200,height:200},}
+          , React.createElement('svg', { width: 200, height: 200, style: {transform:"rotate(-90deg)",position:"absolute",top:0,left:0},}
+            , React.createElement('circle', { cx: 100, cy: 100, r: R, fill: "none", stroke: "var(--bg3)", strokeWidth: 8,})
+            , React.createElement('circle', { cx: 100, cy: 100, r: R, fill: "none", stroke: mc[mode], strokeWidth: 8,
+              strokeDasharray: C, strokeDashoffset: C*(1-prog), strokeLinecap: "round",
+              style: {transition:"stroke-dashoffset 1s linear",filter:`drop-shadow(0 0 10px ${mc[mode]})`},})
+          )
+          , React.createElement('div', { style: {position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center"},}
+            , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:42,color:mc[mode],letterSpacing:3},}, mins, ":", secs)
+            , React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)"},}, ml[mode])
+          )
+        )
+      )
+      , React.createElement('div', { style: {display:"flex",gap:10,justifyContent:"center",marginBottom:16},}
+        , React.createElement(Btn, { size: "lg", variant: "filled", onClick: ()=>setRunning(!running), style: {minWidth:110},}, running?"\u23F8 PAUSE":"\u25B6 START")
+        , React.createElement(Btn, { size: "lg", variant: "ghost", onClick: ()=>{setRunning(false);setTl(modes[mode]);},}, "\u21BA RESET" )
+      )
+      , React.createElement('div', { style: {textAlign:"center",fontFamily:"var(--mono)",fontSize:12,color:"var(--g)",letterSpacing:2,marginBottom:20,opacity:.8},}, motives[mi])
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:16},}
+        , [[`${todayMin}m`,"TODAY","var(--g)"],[sess,"SESSIONS","var(--gold)"],[`${Math.round(data.focusHours||0)}h`,"TOTAL","var(--cyan)"]].map(([v,l,c])=>(
+          React.createElement(Card, { key: l, style: {textAlign:"center",padding:10},}
+            , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:20,color:c},}, v)
+            , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"},}, l)
+          )
+        ))
+      )
+      , React.createElement(Card, null
+        , React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:10},}, "TIMER SETTINGS (min)"  )
+        , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8},}
+          , [["FOCUS","work"],["S.BREAK","shortBreak"],["L.BREAK","longBreak"]].map(([l,k])=>(
+            React.createElement('div', { key: k,}
+              , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:4},}, l)
+              , React.createElement('input', { type: "number", value: ps[k], onChange: e=>updateData({pomodoroSettings:{...ps,[k]:parseInt(e.target.value)||1}}),
+                style: {width:"100%",background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:4,padding:8,color:"var(--g)",fontFamily:"var(--mono)",fontSize:16,textAlign:"center"},})
+            )
+          ))
+        )
+      )
+    )
+  );
+}
+
+// - PERFORMANCE -
+function Performance({data}){
+  const stats=useMemo(()=>computeStats(data),[data]);
+  const subMax720=180; const subMaxPT=60;
+
+  // Aggregate subject-wise across all tests
+  const subjectData={};
+  ["physics","chemistry","botany","zoology"].forEach(sub=>{
+    const entries=[];
+    Object.entries(data.testScores||{}).forEach(([tid,sc])=>{
+      if(sc&&sc[sub]!==undefined){
+        const test=TESTS.find(t=>t.id===tid);
+        const max=_optionalChain([test, 'optionalAccess', _31 => _31.maxMarks])===240?subMaxPT:subMax720;
+        entries.push({tid,val:sc[sub],max,pct:Math.round((sc[sub]/max)*100)});
+      }
+    });
+    const surpriseEntries=(data.surpriseTests||[]).filter(st=>_optionalChain([st, 'access', _32 => _32.subject, 'optionalAccess', _33 => _33.toLowerCase, 'call', _34 => _34()])===sub);
+    subjectData[sub]={entries,avg:entries.length?Math.round(entries.reduce((a,b)=>a+b.pct,0)/entries.length):null,surpriseEntries};
+  });
+
+  const latest720=stats.allScores720.length?stats.allScores720[stats.allScores720.length-1]:null;
+  const predicted=latest720?Math.min(720,Math.round(latest720*1.04+data.streak*0.4)):null;
+  const trend=stats.allScores720.length>1?stats.allScores720[stats.allScores720.length-1]-stats.allScores720[0]:null;
+
+  const subColors={physics:"var(--cyan)",chemistry:"var(--g)",botany:"var(--g4)",zoology:"var(--pur)"};
+  const totalCh=Object.values(CHAPTERS).flat().length;
+
+  return (
+    React.createElement('div', { className: "fi",}
+      , React.createElement(Hdr, { title: "PERFORMANCE ANALYZER" , sub: "SUBJECT-WISE BREAKDOWN + PREDICTIONS"   ,})
+
+      , Object.keys(data.testScores||{}).length===0?(
+        React.createElement(Card, { style: {textAlign:"center",padding:40},}
+          , React.createElement('div', { style: {fontSize:36,marginBottom:12},}, "\uD83D\uDCCA")
+          , React.createElement('div', { style: {color:"var(--t3)",fontFamily:"var(--mono)"},}, "Log test scores to see analysis"     )
+        )
+      ):(
+        React.createElement(React.Fragment, null
+          , predicted&&(
+            React.createElement(Card, { glow: true, style: {marginBottom:16,textAlign:"center"},}
+              , React.createElement('div', { style: {fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",letterSpacing:2},}, "AI PREDICTED NEET 2028"   )
+              , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:50,color:predicted>=650?"var(--g)":predicted>=550?"var(--gold)":"var(--red)",margin:"6px 0",animation:"glow 2.5s ease-in-out infinite"},}, predicted)
+              , React.createElement(PBar, { value: predicted, max: 720, color: predicted>=650?"var(--g)":"var(--gold)", h: 9,})
+              , trend!==null&&React.createElement('div', { style: {marginTop:8,fontSize:12,color:trend>=0?"var(--g)":"var(--red)"},}, "Score trend: "  , trend>=0?"+":"", trend, " pts from first to latest"     )
+            )
+          )
+
+          /* Score history bar */
+          , stats.allScores720.length>0&&(
+            React.createElement(Card, { style: {marginBottom:14},}
+              , React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:10},}, "SCORE HISTORY (720-mark tests)"   )
+              , React.createElement('div', { style: {display:"flex",alignItems:"flex-end",gap:3,height:80},}
+                , stats.allScores720.map((s,i)=>(
+                  React.createElement('div', { key: i, style: {flex:1,display:"flex",flexDirection:"column",alignItems:"center"},}
+                    , React.createElement('div', { style: {fontSize:9,color:"var(--g)",fontFamily:"var(--mono)",marginBottom:2},}, s)
+                    , React.createElement('div', { style: {width:"100%",background:s>=650?"var(--g)":s>=550?"var(--gold)":"var(--red)",height:`${(s/720)*70}px`,minHeight:2,borderRadius:"2px 2px 0 0",boxShadow:`0 0 6px ${s>=650?"var(--g)":s>=550?"var(--gold)":"var(--red)"}66`},})
+                  )
+                ))
+              )
+            )
+          )
+
+          /* Subject breakdown */
+          , React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:10,letterSpacing:2},}, "SUBJECT-WISE PERFORMANCE" )
+          , ["physics","chemistry","botany","zoology"].map(sub=>{
+            const d=subjectData[sub];
+            if(!d.avg&&d.entries.length===0) return null;
+            const col=subColors[sub];
+            return (
+              React.createElement(Card, { key: sub, style: {marginBottom:10,borderColor:col+"44"},}
+                , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",marginBottom:8},}
+                  , React.createElement('span', { style: {fontFamily:"var(--display)",fontSize:13,color:col},}, sub.toUpperCase())
+                  , React.createElement('span', { style: {fontFamily:"var(--mono)",fontSize:13,color:d.avg>=75?"var(--g)":d.avg>=60?"var(--gold)":"var(--red)"},}, d.avg, "% avg" )
+                )
+                , React.createElement(PBar, { value: d.avg||0, max: 100, color: d.avg>=75?"var(--g)":d.avg>=60?"var(--gold)":"var(--red)",})
+                , React.createElement('div', { style: {display:"flex",gap:4,marginTop:8,flexWrap:"wrap"},}
+                  , d.entries.slice(-5).map((e,i)=>(
+                    React.createElement('div', { key: i, style: {background:"var(--bg3)",borderRadius:3,padding:"3px 8px",fontSize:11,fontFamily:"var(--mono)",color:e.pct>=75?"var(--g)":e.pct>=60?"var(--gold)":"var(--red)"},}
+                      , e.tid, ": " , e.val, "/", e.max
+                    )
+                  ))
+                )
+              )
+            );
+          })
+
+          /* Gap analysis */
+          /* AI Performance Analysis */
+          , (()=>{
+            const aiAnalysis=_optionalChain([data, 'access', _35 => _35.aiInsights, 'optionalAccess', _36 => _36.perfAnalysis]);
+            return (
+              React.createElement(Card, { style: {marginBottom:14,borderColor:"var(--pur)44"},}
+                , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8},}
+                  , React.createElement('div', { style: {fontSize:10,color:"var(--pur)",fontFamily:"var(--mono)",letterSpacing:2},}, "\uD83E\uDD16 ARIA PERFORMANCE ANALYSIS"   )
+                  , React.createElement(Btn, { size: "sm", variant: "cyan", onClick: async()=>{
+                    const ctx=buildDataContext(data);
+                    const sys=`You are ARIA, NEET 2028 expert. Analyze performance data and give sharp, actionable 3-4 sentence analysis. Be specific about numbers. Identify exactly what to fix.`;
+                    const prompt=`Scores: ${ctx.scores}. Subject averages: ${ctx.subAvg}. Completed: ${ctx.completedKeys.length}/${ctx.totalCh} chapters. Backlog: ${ctx.backlog}. Streak: ${ctx.streak}d. Analyze and give specific improvement plan.`;
+                    try{
+                      const reply=await callAI(sys,prompt);
+                      updateData({aiInsights:{...(data.aiInsights||{}),perfAnalysis:reply}});
+                    }catch(e){}
+                  },}, "\uD83E\uDD16 ANALYZE" )
+                )
+                , aiAnalysis
+                  ? React.createElement('div', { style: {fontSize:13,color:"var(--t2)",lineHeight:1.7},}, aiAnalysis)
+                  : React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)"},}, "Tap to get AI-powered performance breakdown"     )
+                
+              )
+            );
+          })()
+
+          , React.createElement(Card, null
+            , React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:12},}, "GAP ANALYSIS -> 700+"   )
+            , React.createElement('div', { style: {fontSize:13,color:"var(--t2)",lineHeight:2,background:"var(--bg3)",borderRadius:6,padding:12},}
+              , React.createElement('div', null, "\uD83D\uDCCC Chapters completed: "   , React.createElement('span', { style: {color:"var(--g)",fontFamily:"var(--mono)"},}, stats.completedChapters, "/", totalCh))
+              , React.createElement('div', null, "\uD83D\uDCCC Backlog chapters: "   , React.createElement('span', { style: {color:stats.overdueChapters>0?"var(--red)":"var(--g)",fontFamily:"var(--mono)"},}, stats.overdueChapters))
+              , React.createElement('div', null, "\uD83D\uDCCC Points to 700: "    , React.createElement('span', { style: {color:"var(--gold)",fontFamily:"var(--mono)"},}, Math.max(0,700-(predicted||0))))
+              , React.createElement('div', null, "\uD83D\uDCCC Focus hours: "   , React.createElement('span', { style: {color:"var(--pur)",fontFamily:"var(--mono)"},}, Math.round(data.focusHours||0), "h logged" ))
+              , Object.entries(subjectData).filter(([,d])=>d.avg!==null&&d.avg<60).map(([sub,d])=>(
+                React.createElement('div', { key: sub, style: {color:"var(--red)"},}, "\u26A0 " , sub, ": " , d.avg, "% avg - needs urgent focus"     )
+              ))
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+// - ACHIEVEMENTS -
+function Achievements({data,updateData}){
+  const [newUnlocks,setNewUnlocks]=useState([]);
+  const stats=useMemo(()=>computeStats(data),[data]);
+
+  useEffect(()=>{
+    const state={streak:data.streak,allScores720:stats.allScores720,focusHours:data.focusHours||0,completedChapters:stats.completedChapters,overdueChapters:stats.overdueChapters};
+    const newOnes=BADGES.filter(b=>!data.unlockedBadges.includes(b.id)&&b.condition(state)).map(b=>b.id);
+    if(newOnes.length>0){updateData({unlockedBadges:[...data.unlockedBadges,...newOnes]});setNewUnlocks(newOnes);setTimeout(()=>setNewUnlocks([]),5000);}
+  },[data.streak,stats.allScores720,data.focusHours,stats.completedChapters]);
+
+  const unlocked=BADGES.filter(b=>data.unlockedBadges.includes(b.id));
+  const locked=BADGES.filter(b=>!data.unlockedBadges.includes(b.id));
+
+  return (
+    React.createElement('div', { className: "fi",}
+      , React.createElement(Hdr, { title: "ACHIEVEMENTS", sub: `${unlocked.length}/${BADGES.length} BADGES`,})
+      , newUnlocks.length>0&&(
+        React.createElement('div', { style: {position:"fixed",top:70,right:16,zIndex:1000},}
+          , newUnlocks.map(id=>{const b=BADGES.find(x=>x.id===id);return(
+            React.createElement('div', { key: id, style: {background:"var(--card2)",border:`2px solid ${b.color}`,borderRadius:10,padding:"14px 18px",marginBottom:8,animation:"badgePop .5s ease forwards",boxShadow:`0 0 28px ${b.color}66`,textAlign:"center"},}
+              , React.createElement('div', { style: {fontSize:32},}, b.icon)
+              , React.createElement('div', { style: {fontFamily:"var(--display)",color:b.color,fontSize:12,marginTop:4},}, "UNLOCKED!")
+              , React.createElement('div', { style: {color:"var(--text)",fontSize:12},}, b.name)
+            )
+          );})
+        )
+      )
+      , React.createElement(Card, { glow: true, style: {marginBottom:16,textAlign:"center"},}
+        , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:38,color:"var(--gold)"},}, unlocked.length, React.createElement('span', { style: {fontSize:18,color:"var(--t3)"},}, "/", BADGES.length))
+        , React.createElement(PBar, { value: unlocked.length, max: BADGES.length, color: "var(--gold)", h: 7,})
+        , React.createElement('div', { style: {display:"flex",justifyContent:"center",gap:32,marginTop:12},}
+          , React.createElement('div', null, React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:26,color:"var(--gold)"},}, "\uD83D\uDD25 " , data.streak), React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"},}, "CURRENT"))
+          , React.createElement('div', null, React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:26,color:"var(--ora)"},}, "\u26A1 " , data.longestStreak||0), React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"},}, "LONGEST"))
+        )
+        , React.createElement(Btn, { variant: "filled", style: {marginTop:12,width:"100%"}, onClick: ()=>{
+          const today=new Date().toDateString();
+          if(data.lastStudyDate===today)return;
+          const yest=new Date();yest.setDate(yest.getDate()-1);
+          const ns=data.lastStudyDate===yest.toDateString()?(data.streak||0)+1:1;
+          updateData({streak:ns,longestStreak:Math.max(ns,data.longestStreak||0),lastStudyDate:today});
+        },}, "\u2713 MARK TODAY STUDIED"   )
+      )
+      , unlocked.length>0&&(
+        React.createElement(React.Fragment, null
+          , React.createElement('div', { style: {fontSize:10,color:"var(--g)",fontFamily:"var(--mono)",marginBottom:10,letterSpacing:2},}, "\u2713 UNLOCKED" )
+          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:18},}
+            , unlocked.map(b=>(
+              React.createElement(Card, { key: b.id, style: {textAlign:"center",padding:14,borderColor:b.color+"66",boxShadow:`0 0 10px ${b.color}1a`},}
+                , React.createElement('div', { style: {fontSize:28,marginBottom:6},}, b.icon)
+                , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:10,color:b.color},}, b.name)
+                , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginTop:2},}, b.desc)
+              )
+            ))
+          )
+        )
+      )
+      , React.createElement('div', { style: {fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:10,letterSpacing:2},}, "\uD83D\uDD12 LOCKED" )
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8},}
+        , locked.map(b=>(
+          React.createElement(Card, { key: b.id, style: {textAlign:"center",padding:14,opacity:.45},}
+            , React.createElement('div', { style: {fontSize:28,marginBottom:6,filter:"grayscale(1)"},}, b.icon)
+            , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:10,color:"var(--t3)"},}, b.name)
+            , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginTop:2},}, b.desc)
+          )
+        ))
+      )
+    )
+  );
+}
+
+// - ANALYTICS -
+function Analytics({data}){
+  const stats=useMemo(()=>computeStats(data),[data]);
+  const totalCh=Object.values(CHAPTERS).flat().length;
+  const subjColors={Physics:"var(--cyan)",Chemistry:"var(--g)",Botany:"var(--g4)",Zoology:"var(--pur)"};
+  const subjectRows=Object.entries(CHAPTERS).map(([subj,chs])=>{
+    const done=chs.filter(c=>data.chapters[`${subj}::${c}`]==="completed"||data.chapters[`${subj}::${c}`]==="revised").length;
+    const inp=chs.filter(c=>data.chapters[`${subj}::${c}`]==="in-progress").length;
+    const today=new Date();today.setHours(0,0,0,0);
+    const overdue=chs.filter(c=>{
+      const st=data.chapters[`${subj}::${c}`]||"not-started";
+      if(st==="completed"||st==="revised")return false;
+      const dl=getChapterDeadline(`${subj}::${c}`);
+      return dl&&dl.date<today;
+    }).length;
+    return {subj,done,inp,overdue,total:chs.length,pct:Math.round((done/chs.length)*100)};
+  });
+
+  return (
+    React.createElement('div', { className: "fi",}
+      , React.createElement(Hdr, { title: "STUDY ANALYTICS" , sub: "FULL PREPARATION OVERVIEW"  ,})
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:16},}
+        , [
+          [stats.completedChapters+"/"+totalCh,"CHAPTERS DONE","var(--g)"],
+          [stats.overdueChapters,"BACKLOG","var(--red)"],
+          [Object.keys(data.testScores||{}).length+"/28","TESTS DONE","var(--cyan)"],
+          [`${Math.round(data.focusHours||0)}h`,"FOCUS TIME","var(--pur)"],
+          [(data.streak||0)+"d","STREAK","var(--gold)"],
+          [data.unlockedBadges.length+"/"+BADGES.length,"BADGES","var(--ora)"]
+        ].map(([v,l,c])=>(
+          React.createElement(Card, { key: l, style: {textAlign:"center",padding:12,borderColor:c+"33"},}
+            , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:22,color:c},}, v)
+            , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",marginTop:3},}, l)
+          )
+        ))
+      )
+      , React.createElement(Card, { style: {marginBottom:14},}
+        , React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:12},}, "SUBJECT COMPLETION %"  )
+        , React.createElement('div', { style: {display:"flex",alignItems:"flex-end",gap:10,height:100,paddingBottom:4},}
+          , subjectRows.map(({subj,pct})=>(
+            React.createElement('div', { key: subj, style: {flex:1,display:"flex",flexDirection:"column",alignItems:"center"},}
+              , React.createElement('div', { style: {fontSize:12,color:subjColors[subj],fontFamily:"var(--mono)",marginBottom:4},}, pct, "%")
+              , React.createElement('div', { style: {width:"100%",background:subjColors[subj],height:`${Math.max(pct,2)}px`,minHeight:2,borderRadius:"3px 3px 0 0",boxShadow:`0 0 8px ${subjColors[subj]}55`,transition:"height .5s"},})
+              , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",marginTop:5,fontFamily:"var(--mono)"},}, subj.slice(0,4).toUpperCase())
+            )
+          ))
+        )
+      )
+      , subjectRows.map(({subj,done,inp,overdue,total,pct})=>(
+        React.createElement(Card, { key: subj, style: {marginBottom:10,borderColor:subjColors[subj]+"44"},}
+          , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",marginBottom:8},}
+            , React.createElement('span', { style: {color:subjColors[subj],fontFamily:"var(--display)",fontSize:13},}, subj)
+            , React.createElement('span', { style: {fontFamily:"var(--mono)",fontSize:12,color:"var(--t2)"},}, done, "/", total, " (" , pct, "%)")
+          )
+          , React.createElement(PBar, { value: done, max: total, color: subjColors[subj],})
+          , React.createElement('div', { style: {display:"flex",gap:12,marginTop:8,fontSize:11,fontFamily:"var(--mono)"},}
+            , React.createElement('span', { style: {color:"var(--g)"},}, "\u2713", done)
+            , React.createElement('span', { style: {color:"var(--gold)"},}, "\u25D0", inp)
+            , overdue>0&&React.createElement('span', { style: {color:"var(--red)"},}, "\u26A0", overdue, " backlog" )
+          )
+        )
+      ))
+      , stats.allScores720.length>0&&(
+        React.createElement(Card, null
+          , React.createElement('div', { style: {fontSize:11,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:10},}, "SCORE TREND (720M TESTS)"   )
+          , React.createElement('div', { style: {display:"flex",alignItems:"flex-end",gap:3,height:70},}
+            , stats.allScores720.map((s,i)=>(
+              React.createElement('div', { key: i, style: {flex:1,display:"flex",flexDirection:"column",alignItems:"center"},}
+                , React.createElement('div', { style: {fontSize:9,color:"var(--g)",fontFamily:"var(--mono)",marginBottom:1},}, s)
+                , React.createElement('div', { style: {width:"100%",background:"linear-gradient(to top,var(--g3),var(--g))",height:`${Math.max((s/720)*60,2)}px`,borderRadius:2},})
+              )
+            ))
+          )
+        )
+      )
+    )
+  );
+}
+
+
+// - TO-DO LIST -
+function ToDoList({data,updateData,setTab}){
+  const [text,setText]=useState("");
+  const [subject,setSubject]=useState("");
+  const [priority,setPriority]=useState("med");
+  const [dueDate,setDueDate]=useState("");
+  const [filter,setFilter]=useState("today");
+  const [adding,setAdding]=useState(false);
+  const todayStr=new Date().toISOString().split("T")[0];
+  const todayLabel=new Date().toDateString();
+
+  const pColors={high:"var(--red)",med:"var(--gold)",low:"var(--t3)"};
+
+  const addTask=()=>{
+    if(!text.trim())return;
+    const task={id:Date.now(),text:text.trim(),subject,priority,dueDate,done:false,createdDate:todayLabel,completedDate:null,linkedBacklog:false};
+    updateData({tasks:[...(data.tasks||[]),task]});
+    setText("");setSubject("");setPriority("med");setDueDate("");setAdding(false);
+  };
+
+  const toggle=(id)=>{
+    const updated=(data.tasks||[]).map(t=>t.id===id?{...t,done:!t.done,completedDate:!t.done?todayLabel:null}:t);
+    // Check if all today tasks done -> perfect day badge
+    const todayTasks=updated.filter(t=>!t.dueDate||t.dueDate===todayStr);
+    const allDone=todayTasks.length>0&&todayTasks.every(t=>t.done);
+    if(allDone){
+      const pw=(data.perfectWeeks||0)+1;
+      updateData({tasks:updated,perfectWeeks:pw});
+    } else {
+      updateData({tasks:updated});
+    }
+  };
+
+  const del=(id)=>updateData({tasks:(data.tasks||[]).filter(t=>t.id!==id)});
+
+  // Auto-generate smart tasks from backlog + revision due
+  const autoGenerate=()=>{
+    const existing=new Set((data.tasks||[]).map(t=>t.text));
+    const auto=[];
+    // Add overdue chapters as high-priority tasks
+    Object.entries(data.chapters||{}).forEach(([key,status])=>{
+      if(status==="completed"||status==="revised")return;
+      const dl=getChapterDeadline(key);
+      const today=new Date();today.setHours(0,0,0,0);
+      if(!dl||dl.date>=today)return;
+      const [subj,ch]=key.split("::");
+      const txt=`Study: ${ch}`;
+      if(!existing.has(txt)){
+        auto.push({id:Date.now()+auto.length,text:txt,subject:subj,priority:"high",dueDate:todayStr,done:false,createdDate:todayLabel,completedDate:null,autoGenerated:true});
+      }
+    });
+    // Add revision due items
+    Object.entries(data.chapters||{}).filter(([,v])=>v==="completed"||v==="revised").forEach(([key])=>{
+      const log=_optionalChain([data, 'access', _37 => _37.revisionLog, 'optionalAccess', _38 => _38[key]])||[];
+      const lastRev=log.length?new Date(log[log.length-1].date):null;
+      const daysSince=lastRev?Math.ceil((new Date()-lastRev)/86400000):9999;
+      const intervals=[1,3,7,14,30,60,90];
+      const nextInterval=intervals[Math.min(log.length,intervals.length-1)];
+      if(daysSince>=nextInterval){
+        const [subj,ch]=key.split("::");
+        const txt=`Revise: ${ch}`;
+        if(!existing.has(txt)){
+          auto.push({id:Date.now()+auto.length+100,text:txt,subject:subj,priority:"med",dueDate:todayStr,done:false,createdDate:todayLabel,completedDate:null,autoGenerated:true});
+        }
+      }
+    });
+    if(auto.length>0) updateData({tasks:[...(data.tasks||[]),...auto]});
+  };
+
+  const tasks=data.tasks||[];
+  const filtered=filter==="today"
+    ? tasks.filter(t=>!t.dueDate||t.dueDate===todayStr||t.dueDate<todayStr)
+    : filter==="pending" ? tasks.filter(t=>!t.done)
+    : filter==="done" ? tasks.filter(t=>t.done)
+    : tasks;
+
+  const pending=tasks.filter(t=>!t.done).length;
+  const doneToday=tasks.filter(t=>t.done&&t.completedDate===todayLabel).length;
+  const high=tasks.filter(t=>!t.done&&t.priority==="high").length;
+
+  return (
+    React.createElement('div', { className: "fi",}
+      , React.createElement(Hdr, { title: "TO-DO LIST" , sub: "INTEGRATED WITH DEADLINES * REVISION * STREAK"      ,})
+
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14},}
+        , [[pending,"PENDING","var(--gold)"],[doneToday,"DONE TODAY","var(--g)"],[high,"HIGH PRIORITY","var(--red)"]].map(([v,l,c])=>(
+          React.createElement(Card, { key: l, style: {textAlign:"center",padding:"10px 6px",borderColor:c+"44"},}
+            , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:22,color:c},}, v)
+            , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"},}, l)
+          )
+        ))
+      )
+
+      , React.createElement('div', { style: {display:"flex",gap:6,marginBottom:8},}
+        , React.createElement(Btn, { size: "sm", variant: "filled", onClick: autoGenerate, style: {flex:1},}, "\u26A1 AUTO-FILL" )
+        , React.createElement(Btn, { size: "sm", onClick: ()=>setAdding(!adding), style: {flex:1},}, "+ ADD TASK"  )
+      )
+      , React.createElement(Btn, { variant: "cyan", size: "sm", style: {width:"100%",marginBottom:12}, onClick: async()=>{
+        const ctx=buildDataContext(data);
+        const nextTest=TESTS.find(t=>!_optionalChain([data, 'access', _39 => _39.testScores, 'optionalAccess', _40 => _40[t.id]]));
+        const sys=`You are ARIA. Generate a focused daily task list for a NEET 2028 student. Return ONLY JSON array \u2014 no markdown, no backticks. Format: [{"text":"task","subject":"Physics|Chemistry|Botany|Zoology|General","priority":"high|med|low"},...] Max 8 tasks.`;
+        const prompt=`Student: streak:${ctx.streak}d, backlog:${ctx.backlog}, subject progress:${ctx.subjPct}, scores:${ctx.subAvg}, next test:${nextTest?nextTest.id+"("+nextTest.dates+")":"none"}, focus hours:${ctx.focusHours}h. Generate today's optimal task list.`;
+        try{
+          const raw=await callAI(sys,prompt);
+          const clean=raw.replace(/\`\`\`json|\`\`\`/g,"").trim();
+          const aiTasks=JSON.parse(clean);
+          const todayStr2=new Date().toISOString().split("T")[0];
+          const existing=new Set((data.tasks||[]).map(t=>t.text));
+          const newTasks=aiTasks.filter(t=>!existing.has(t.text)).map((t,i)=>({
+            id:Date.now()+i,text:t.text,subject:t.subject||"",priority:t.priority||"med",
+            dueDate:todayStr2,done:false,createdDate:new Date().toDateString(),completedDate:null,autoGenerated:true
+          }));
+          if(newTasks.length>0) updateData({tasks:[...(data.tasks||[]),...newTasks]});
+        }catch(e){}
+      },}, "\uD83E\uDD16 ARIA: GENERATE TODAY'S PLAN"    )
+
+      , adding&&(
+        React.createElement(Card, { style: {marginBottom:14,borderColor:"var(--g3)"},}
+          , React.createElement('input', { placeholder: "Task description..." , value: text, onChange: e=>setText(e.target.value),
+            onKeyDown: e=>e.key==="Enter"&&addTask(),
+            style: {width:"100%",background:"var(--bg3)",border:"1px solid var(--border2)",color:"var(--text)",borderRadius:4,padding:"9px 12px",fontFamily:"var(--body)",fontSize:14,marginBottom:8},})
+          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:8,marginBottom:8},}
+            , React.createElement('select', { value: subject, onChange: e=>setSubject(e.target.value),
+              style: {background:"var(--bg3)",border:"1px solid var(--border2)",color:"var(--text)",borderRadius:4,padding:8,fontFamily:"var(--body)",fontSize:13},}
+              , React.createElement('option', { value: "",}, "No subject" )
+              , Object.keys(CHAPTERS).map(s=>React.createElement('option', { key: s,}, s))
+            )
+            , React.createElement('select', { value: priority, onChange: e=>setPriority(e.target.value),
+              style: {background:"var(--bg3)",border:"1px solid var(--border2)",color:pColors[priority],borderRadius:4,padding:8,fontFamily:"var(--body)",fontSize:13},}
+              , React.createElement('option', { value: "high",}, "\uD83D\uDD34 High" )
+              , React.createElement('option', { value: "med",}, "\uD83D\uDFE1 Med" )
+              , React.createElement('option', { value: "low",}, "\u26AA Low" )
+            )
+            , React.createElement('input', { type: "date", value: dueDate, onChange: e=>setDueDate(e.target.value),
+              style: {background:"var(--bg3)",border:"1px solid var(--border2)",color:"var(--text)",borderRadius:4,padding:8,fontFamily:"var(--mono)",fontSize:12},})
+          )
+          , React.createElement('div', { style: {display:"flex",gap:8},}
+            , React.createElement(Btn, { variant: "filled", onClick: addTask, style: {flex:1},}, "ADD TASK" )
+            , React.createElement(Btn, { variant: "ghost", onClick: ()=>setAdding(false), style: {flex:1},}, "CANCEL")
+          )
+        )
+      )
+
+      /* Filter tabs */
+      , React.createElement('div', { style: {display:"flex",gap:6,marginBottom:14},}
+        , [["today","TODAY"],["pending","PENDING"],["done","DONE"],["all","ALL"]].map(([f,l])=>(
+          React.createElement(Btn, { key: f, size: "sm", variant: filter===f?"filled":"ghost", onClick: ()=>setFilter(f), style: {flex:1},}, l)
+        ))
+      )
+
+      , filtered.length===0&&(
+        React.createElement('div', { style: {textAlign:"center",color:"var(--t3)",fontFamily:"var(--mono)",padding:32},}
+          , filter==="done"?"No completed tasks yet.":filter==="today"?"No tasks for today! Tap Auto-Fill or Add Task.":"No tasks here."
+        )
+      )
+
+      , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:7},}
+        , filtered.sort((a,b)=>{
+          if(a.done!==b.done)return a.done?1:-1;
+          const po={high:0,med:1,low:2};
+          return (po[a.priority]||1)-(po[b.priority]||1);
+        }).map(task=>(
+          React.createElement(Card, { key: task.id, style: {padding:"11px 14px",borderColor:task.done?"var(--border)":pColors[task.priority]+"55",opacity:task.done?.6:1},}
+            , React.createElement('div', { style: {display:"flex",alignItems:"flex-start",gap:10},}
+              , React.createElement('button', { onClick: ()=>toggle(task.id), style: {width:20,height:20,borderRadius:"50%",border:`2px solid ${task.done?"var(--g)":pColors[task.priority]}`,background:task.done?"var(--g)":"transparent",cursor:"pointer",flexShrink:0,marginTop:1,display:"flex",alignItems:"center",justifyContent:"center"},}
+                , task.done&&React.createElement('span', { style: {fontSize:10,color:"#000",fontWeight:900},}, "\u2713")
+              )
+              , React.createElement('div', { style: {flex:1},}
+                , React.createElement('div', { style: {fontSize:14,color:task.done?"var(--t3)":"var(--text)",textDecoration:task.done?"line-through":"none",fontWeight:600},}, task.text)
+                , React.createElement('div', { style: {display:"flex",gap:6,marginTop:4,flexWrap:"wrap",alignItems:"center"},}
+                  , task.subject&&React.createElement(Tag, { color: "var(--cyan)",}, task.subject)
+                  , React.createElement('span', { style: {fontSize:10,color:pColors[task.priority],fontFamily:"var(--mono)"},}, task.priority.toUpperCase())
+                  , task.dueDate&&React.createElement('span', { style: {fontSize:10,color:task.dueDate<todayStr&&!task.done?"var(--red)":"var(--t3)",fontFamily:"var(--mono)"},}, task.dueDate<todayStr&&!task.done?"\u26A0 OVERDUE":"Due: "+task.dueDate)
+                  , task.autoGenerated&&React.createElement('span', { style: {fontSize:9,color:"var(--pur)",fontFamily:"var(--mono)"},}, "AUTO")
+                  , task.done&&task.completedDate&&React.createElement('span', { style: {fontSize:10,color:"var(--g)",fontFamily:"var(--mono)"},}, "\u2713 " , task.completedDate)
+                )
+              )
+              , React.createElement('button', { onClick: ()=>del(task.id), style: {background:"none",border:"none",color:"var(--red)",cursor:"pointer",fontSize:14,opacity:.5,padding:"0 4px"},}, "\u00D7")
+            )
+          )
+        ))
+      )
+
+      , tasks.filter(t=>t.done).length>0&&(
+        React.createElement(Btn, { variant: "ghost", size: "sm", style: {marginTop:16,width:"100%",color:"var(--red)",borderColor:"var(--red)"},
+          onClick: ()=>updateData({tasks:tasks.filter(t=>!t.done)}),}, "CLEAR ALL COMPLETED ("
+             , tasks.filter(t=>t.done).length, ")"
+        )
+      )
+    )
+  );
+}
+
+// - AI CHAT -
+function AIChat({data,updateData,setTab}){
+  const [msgs,setMsgs]=useState(data.chatHistory||[]);
+  const [inp,setInp]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [name,setName]=useState(_optionalChain([data, 'access', _41 => _41.aiMemory, 'optionalAccess', _42 => _42.name])||"");
+  const [nameSet,setNameSet]=useState(!!_optionalChain([data, 'access', _43 => _43.aiMemory, 'optionalAccess', _44 => _44.name]));
+  const [execLog,setExecLog]=useState([]); // log of actions executed
+  const endRef=useRef();
+  const stats=useMemo(()=>computeStats(data),[data]);
+  useEffect(()=>{_optionalChain([endRef, 'access', _45 => _45.current, 'optionalAccess', _46 => _46.scrollIntoView, 'call', _47 => _47({behavior:"smooth"})]);},[msgs]);
+
+  // - TOOL DEFINITIONS -
+  const TOOLS=[
+    {name:"set_test_score",description:"Set subject-wise score for an official Aakash test. PT tests max 60 per subject (240 total). All others max 180 per subject (720 total).",
+     input_schema:{type:"object",properties:{
+       testId:{type:"string",description:"Test ID e.g. PT-01, TE-02, AIATS-03"},
+       physics:{type:"number",description:"Physics marks"},
+       chemistry:{type:"number",description:"Chemistry marks"},
+       botany:{type:"number",description:"Botany marks"},
+       zoology:{type:"number",description:"Zoology marks"}
+     },required:["testId","physics","chemistry","botany","zoology"]}},
+    {name:"delete_test_score",description:"Remove/clear a test score entry.",
+     input_schema:{type:"object",properties:{testId:{type:"string"}},required:["testId"]}},
+    {name:"add_surprise_test",description:"Add a surprise/class test with custom marks.",
+     input_schema:{type:"object",properties:{
+       title:{type:"string"},maxMarks:{type:"number"},obtained:{type:"number"},
+       subject:{type:"string",description:"Subject if single-subject test, else empty"},
+       date:{type:"string",description:"YYYY-MM-DD format"},note:{type:"string"}
+     },required:["title","maxMarks","obtained"]}},
+    {name:"set_chapter_status",description:"Set a chapter status: not-started, in-progress, completed, or revised.",
+     input_schema:{type:"object",properties:{
+       subject:{type:"string",enum:["Physics","Chemistry","Botany","Zoology"]},
+       chapter:{type:"string",description:"Chapter name \u2014 must match exactly from the list"},
+       status:{type:"string",enum:["not-started","in-progress","completed","revised"]}
+     },required:["subject","chapter","status"]}},
+    {name:"add_task",description:"Add a task to the to-do list.",
+     input_schema:{type:"object",properties:{
+       text:{type:"string"},
+       subject:{type:"string",description:"Physics, Chemistry, Botany, Zoology, or General"},
+       priority:{type:"string",enum:["high","med","low"]},
+       dueDate:{type:"string",description:"YYYY-MM-DD format, optional"}
+     },required:["text"]}},
+    {name:"complete_task",description:"Mark a task as done by matching its text.",
+     input_schema:{type:"object",properties:{text:{type:"string",description:"Task text to match (partial match ok)"}},required:["text"]}},
+    {name:"delete_task",description:"Delete a task by matching its text.",
+     input_schema:{type:"object",properties:{text:{type:"string"}},required:["text"]}},
+    {name:"mark_today_studied",description:"Mark today as a study day to maintain/extend the streak.",
+     input_schema:{type:"object",properties:{},required:[]}},
+    {name:"mark_revision_done",description:"Mark a chapter as revised in the spaced repetition log.",
+     input_schema:{type:"object",properties:{
+       subject:{type:"string",enum:["Physics","Chemistry","Botany","Zoology"]},
+       chapter:{type:"string"}
+     },required:["subject","chapter"]}},
+    {name:"add_to_revision_queue",description:"Add a chapter to the revision queue by marking it completed (if not already).",
+     input_schema:{type:"object",properties:{
+       subject:{type:"string",enum:["Physics","Chemistry","Botany","Zoology"]},
+       chapter:{type:"string"}
+     },required:["subject","chapter"]}},
+    {name:"log_focus_time",description:"Log manual focus/study time in hours.",
+     input_schema:{type:"object",properties:{hours:{type:"number"}},required:["hours"]}},
+  ];
+
+  // - TOOL EXECUTOR -
+  const executeTool=(toolName, input)=>{
+    const logs=[];
+    try{
+      switch(toolName){
+        case "set_test_score":{
+          const test=TESTS.find(t=>t.id===input.testId);
+          if(!test){logs.push("\u274C Test ID not found: "+input.testId);break;}
+          const maxPerSubj=test.maxMarks===240?60:180;
+          const total=(input.physics||0)+(input.chemistry||0)+(input.botany||0)+(input.zoology||0);
+          const pct=Math.round((total/test.maxMarks)*100);
+          const newScores={...(data.testScores||{}),[input.testId]:{physics:input.physics||0,chemistry:input.chemistry||0,botany:input.botany||0,zoology:input.zoology||0,total,percentage:pct,maxMarks:test.maxMarks}};
+          updateData({testScores:newScores});
+          logs.push(`\u2705 Saved ${input.testId}: P:${input.physics} C:${input.chemistry} B:${input.botany} Z:${input.zoology} = ${total}/${test.maxMarks} (${pct}%)`);
+          break;
+        }
+        case "delete_test_score":{
+          const ns={...(data.testScores||{})};
+          if(ns[input.testId]){delete ns[input.testId];updateData({testScores:ns});logs.push(`\u2705 Cleared score for ${input.testId}`);}
+          else logs.push(`\u274C No score found for ${input.testId}`);
+          break;
+        }
+        case "add_surprise_test":{
+          const st={id:Date.now(),...input,maxMarks:parseInt(input.maxMarks),obtained:parseFloat(input.obtained),percentage:Math.round((parseFloat(input.obtained)/parseInt(input.maxMarks))*100)};
+          updateData({surpriseTests:[...(data.surpriseTests||[]),st]});
+          logs.push(`\u2705 Added surprise test "${input.title}": ${input.obtained}/${input.maxMarks} (${st.percentage}%)`);
+          break;
+        }
+        case "set_chapter_status":{
+          // Fuzzy match chapter name
+          const chs=CHAPTERS[input.subject]||[];
+          const match=chs.find(c=>c.toLowerCase().includes(input.chapter.toLowerCase())||input.chapter.toLowerCase().includes(c.toLowerCase().split(" ").slice(0,2).join(" ")));
+          if(!match){logs.push(`\u274C Chapter not found: "${input.chapter}" in ${input.subject}`);break;}
+          const key=`${input.subject}::${match}`;
+          updateData({chapters:{...(data.chapters||{}),[key]:input.status}});
+          logs.push(`\u2705 "${match}" (${input.subject}) -> ${input.status}`);
+          break;
+        }
+        case "add_task":{
+          const task={id:Date.now(),text:input.text,subject:input.subject||"",priority:input.priority||"med",dueDate:input.dueDate||"",done:false,createdDate:new Date().toDateString(),completedDate:null};
+          updateData({tasks:[...(data.tasks||[]),task]});
+          logs.push(`\u2705 Task added: "${input.text}" [${task.priority} priority]`);
+          break;
+        }
+        case "complete_task":{
+          const tasks=data.tasks||[];
+          const idx=tasks.findIndex(t=>t.text.toLowerCase().includes(input.text.toLowerCase()));
+          if(idx===-1){logs.push(`\u274C Task not found: "${input.text}"`);break;}
+          const updated=tasks.map((t,i)=>i===idx?{...t,done:true,completedDate:new Date().toDateString()}:t);
+          updateData({tasks:updated});
+          logs.push(`\u2705 Completed: "${tasks[idx].text}"`);
+          break;
+        }
+        case "delete_task":{
+          const before=data.tasks||[];
+          const after=before.filter(t=>!t.text.toLowerCase().includes(input.text.toLowerCase()));
+          if(after.length===before.length){logs.push(`\u274C Task not found: "${input.text}"`);break;}
+          updateData({tasks:after});
+          logs.push(`\u2705 Deleted task matching: "${input.text}"`);
+          break;
+        }
+        case "mark_today_studied":{
+          const today=new Date().toDateString();
+          if(data.lastStudyDate===today){logs.push("\u2139 Already marked today as studied");break;}
+          const yest=new Date();yest.setDate(yest.getDate()-1);
+          const ns=data.lastStudyDate===yest.toDateString()?(data.streak||0)+1:1;
+          updateData({streak:ns,longestStreak:Math.max(ns,data.longestStreak||0),lastStudyDate:today});
+          logs.push(`\u2705 Streak updated! Now ${ns} days \uD83D\uDD25`);
+          break;
+        }
+        case "mark_revision_done":{
+          const chs=CHAPTERS[input.subject]||[];
+          const match=chs.find(c=>c.toLowerCase().includes(input.chapter.toLowerCase()));
+          if(!match){logs.push(`\u274C Chapter not found: "${input.chapter}"`);break;}
+          const key=`${input.subject}::${match}`;
+          const log=data.revisionLog||{};
+          const entry={date:new Date().toISOString(),type:"completed"};
+          const newLog={...log,[key]:[...(log[key]||[]),entry]};
+          updateData({revisionLog:newLog,chapters:{...(data.chapters||{}),[key]:"revised"}});
+          logs.push(`\u2705 Revision logged: "${match}" (${input.subject}) Rev#${(log[key]||[]).length+1}`);
+          break;
+        }
+        case "add_to_revision_queue":{
+          const chs=CHAPTERS[input.subject]||[];
+          const match=chs.find(c=>c.toLowerCase().includes(input.chapter.toLowerCase()));
+          if(!match){logs.push(`\u274C Chapter not found: "${input.chapter}"`);break;}
+          const key=`${input.subject}::${match}`;
+          const cur=_optionalChain([data, 'access', _48 => _48.chapters, 'optionalAccess', _49 => _49[key]])||"not-started";
+          if(cur==="completed"||cur==="revised"){logs.push(`\u2139 "${match}" already in revision queue (${cur})`);break;}
+          updateData({chapters:{...(data.chapters||{}),[key]:"completed"}});
+          logs.push(`\u2705 "${match}" marked completed -> added to revision queue`);
+          break;
+        }
+        case "log_focus_time":{
+          const newH=(data.focusHours||0)+parseFloat(input.hours||0);
+          updateData({focusHours:newH});
+          logs.push(`\u2705 Logged ${input.hours}h focus time. Total: ${newH.toFixed(1)}h`);
+          break;
+        }
+        default: logs.push(`\u274C Unknown tool: ${toolName}`);
+      }
+    }catch(e){logs.push(`\u274C Error: ${e.message}`);}
+    return logs;
+  };
+
+  // - SEND WITH TOOL USE (OpenAI) -
+  const send=async()=>{
+    if(!inp.trim()||loading)return;
+    if(!getKey()){
+      setMsgs(prev=>[...prev,{role:"user",content:inp},{role:"assistant",content:"No API key set! Tap SET API KEY above to add your Groq API key (free from console.groq.com)"}]);
+      setInp(""); return;
+    }
+    const userMsg={role:"user",content:inp};
+    const newMsgs=[...msgs,userMsg];
+    setMsgs(newMsgs);setInp("");setLoading(true);setExecLog([]);
+    const ctx=buildDataContext(data);
+    const todayStr=new Date().toISOString().split("T")[0];
+    const subAvgFull=["physics","chemistry","botany","zoology"].map(sub=>{
+      const vals=Object.values(data.testScores||{}).filter(s=>s[sub]!==undefined);
+      if(!vals.length)return sub+":no data";
+      const avg=Math.round(vals.reduce((a,b)=>a+(b[sub]/(b.maxMarks===240?60:180))*100,0)/vals.length);
+      return sub+":"+avg+"%";
+    }).join(", ");
+    const system="You are ARIA, NEET 2028 AI agent for "+(name||"student")+". You are both a mentor AND an action executor.\n\nLIVE DATA:\n- Streak: "+ctx.streak+"d | Focus: "+ctx.focusHours+"h\n- Chapters: "+ctx.subjPct+"\n- Backlog: "+ctx.backlog+"\n- Test scores: "+ctx.scores+"\n- Subject avg: "+subAvgFull+"\n- Pending tasks: "+(data.tasks||[]).filter(t=>!t.done).length+"\n- Today: "+todayStr+"\n\nCHAPTER LISTS:\nPhysics: "+CHAPTERS.Physics.join(", ")+"\nChemistry: "+CHAPTERS.Chemistry.join(", ")+"\nBotany: "+CHAPTERS.Botany.join(", ")+"\nZoology: "+CHAPTERS.Zoology.join(", ")+"\n\nTEST IDs: "+TESTS.map(t=>t.id).join(", ")+"\n\nRULES:\n- If user gives a COMMAND -> use tool(s) immediately, can call multiple\n- After executing, give brief confirmation + insight\n- If chatting/asking -> respond normally\n- Be sharp and direct\n- Fuzzy match chapters: NLM=Laws of Motion, etc.";
+    try{
+      const {text,toolCalls}=await callAIWithTools(system, newMsgs, TOOLS);
+      const allLogs=[];
+      for(const tc of toolCalls){
+        try{
+          const input=JSON.parse(tc.function.arguments||"{}");
+          const logs=executeTool(tc.function.name,input);
+          allLogs.push(...logs);
+        }catch(e){allLogs.push("Tool error: "+e.message);}
+      }
+      if(allLogs.length>0) setExecLog(allLogs);
+      const replyText=(allLogs.length>0?"Actions executed:\n"+allLogs.join("\n")+"\n\n":"")+(text||"");
+      const aiMsg={role:"assistant",content:replyText||"Done!"};
+      const final=[...newMsgs,aiMsg];
+      setMsgs(final);
+      updateData({chatHistory:final});
+    }catch(e){
+      const raw=e.message||"";
+      const msg=raw==="NO_KEY"?"No API key set! Tap SET API KEY above.":raw.includes("401")||raw.includes("API_KEY")||raw.includes("invalid")?"Invalid API key. Go to console.groq.com and get a new key.":raw.includes("429")||raw.includes("quota")?"Rate limit hit. Wait 1 minute and retry.":raw.includes("GROQ_FAIL")||raw.includes("fetch")?"Groq API connection failed. Check your internet connection.":"Error: "+raw+". Try again.";
+      setMsgs([...newMsgs,{role:"assistant",content:msg}]);
+    }
+    setLoading(false);
+  };
+
+  const commandExamples=[
+    ["\uD83D\uDCDD Scores","Enter PT-01: Physics 52, Chem 48, Botany 55, Zoo 44"],
+    ["\uD83D\uDCDA Chapter","Mark Laws of Motion as completed"],
+    ["\u2705 Task","Add task: Solve 50 MCQs of thermodynamics, high priority"],
+    ["\uD83D\uDD04 Revision","Mark Cell Division as revised"],
+    ["\u23F1 Focus","Log 2 hours of focus time"],
+    ["\uD83D\uDDD1 Delete","Delete PT-02 score"],
+    ["\uD83D\uDCCB Queue","Add Gravitation to revision queue"],
+    ["\uD83D\uDD25 Streak","Mark today as studied"],
+  ];
+
+  const quickPrompts=["Analyze my prep","What should I study today?","Which subject needs most focus?","Am I on track for AIR-1?","Motivate me!"];
+
+  const [apiKeyInput,setApiKeyInput]=useState(getKey());
+  const [showKeyInput,setShowKeyInput]=useState(false);
+
+  if(!nameSet)return(
+    React.createElement('div', { className: "fi", style: {display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:400,textAlign:"center"},}
+      , React.createElement('div', { style: {fontSize:48,marginBottom:12},}, "\uD83E\uDD16")
+      , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:18,color:"var(--g)",marginBottom:8},}, "MEET ARIA" )
+      , React.createElement('div', { style: {color:"var(--t2)",fontSize:13,marginBottom:8,lineHeight:1.7},}, "AI agent powered by Groq AI (Free)."
+              , React.createElement('br', null), "Chat, analyze, AND execute actions."
+      )
+      , React.createElement('input', { placeholder: "Your name..." , value: name, onChange: e=>setName(e.target.value),
+        onKeyDown: e=>e.key==="Enter"&&name.trim()&&(setNameSet(true),updateData({aiMemory:{...(data.aiMemory||{}),name}})),
+        style: {background:"var(--bg3)",border:"2px solid var(--g)",borderRadius:8,padding:"12px 20px",color:"var(--g)",fontFamily:"var(--display)",fontSize:18,textAlign:"center",width:"100%",maxWidth:300,marginBottom:10},})
+      , React.createElement('div', { style: {width:"100%",maxWidth:300,marginBottom:14},}
+        , React.createElement('div', { style: {fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:6,textAlign:"left"},}, "OPENAI API KEY (from console.groq.com)"    )
+        , React.createElement('input', { placeholder: "gsk_...", value: apiKeyInput, onChange: e=>setApiKeyInput(e.target.value), type: "password",
+          style: {width:"100%",background:"var(--bg3)",border:"2px solid var(--border2)",borderRadius:8,padding:"10px 14px",color:"var(--cyan)",fontFamily:"var(--mono)",fontSize:13},})
+        , React.createElement('div', { style: {fontSize:10,color:"var(--t3)",marginTop:4,textAlign:"left"},}, "Groq is 100% FREE. No credit card needed!"         )
+      )
+      , React.createElement(Btn, { variant: "filled", size: "lg", onClick: ()=>{
+        if(name.trim()){
+          if(apiKeyInput.trim()) saveKey(apiKeyInput.trim());
+          setNameSet(true);updateData({aiMemory:{...(data.aiMemory||{}),name}});
+        }
+      },}, "START MISSION \uD83D\uDE80"  )
+    )
+  );
+
+  return(
+    React.createElement('div', { className: "fi", style: {display:"flex",flexDirection:"column"},}
+      , React.createElement(Hdr, { title: "ARIA COMMAND CENTER"  , sub: "CHAT + EXECUTE ACTIONS * POWERED BY GROQ LLAMA3 (FREE)"          ,})
+      /* API Key bar */
+      , React.createElement('div', { style: {display:"flex",gap:6,alignItems:"center",marginBottom:10,background:"var(--bg3)",borderRadius:6,padding:"6px 10px",border:"1px solid var(--border)"},}
+        , React.createElement('span', { style: {fontSize:10,color:getKey()?"var(--g)":"var(--red)",fontFamily:"var(--mono)",flex:1},}, getKey()?"\u2713 GROQ KEY SET":"\u26A0 NO GROQ KEY")
+        , React.createElement(Btn, { size: "sm", variant: "ghost", onClick: ()=>setShowKeyInput(!showKeyInput),}, "SET API KEY"  )
+      )
+      , showKeyInput&&(
+        React.createElement('div', { style: {display:"flex",gap:8,marginBottom:10},}
+          , React.createElement('input', { placeholder: "gsk_...", value: apiKeyInput, onChange: e=>setApiKeyInput(e.target.value), type: "password",
+            style: {flex:1,background:"var(--bg3)",border:"1px solid var(--cyan)",borderRadius:6,padding:"8px 12px",color:"var(--cyan)",fontFamily:"var(--mono)",fontSize:13},})
+          , React.createElement(Btn, { variant: "cyan", onClick: ()=>{saveKey(apiKeyInput.trim());setShowKeyInput(false);},}, "SAVE")
+        )
+      )
+
+      /* Command examples */
+      , React.createElement(Card, { style: {marginBottom:10,padding:"10px 14px"},}
+        , React.createElement('div', { style: {fontSize:10,color:"var(--gold)",fontFamily:"var(--mono)",marginBottom:8,letterSpacing:2},}, "\u26A1 COMMAND EXAMPLES"  )
+        , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:6},}
+          , commandExamples.map(([label,ex])=>(
+            React.createElement('button', { key: label, onClick: ()=>setInp(ex),
+              style: {background:"var(--bg3)",border:"1px solid var(--border2)",borderRadius:6,padding:"6px 8px",cursor:"pointer",textAlign:"left"},}
+              , React.createElement('div', { style: {fontSize:10,color:"var(--gold)",fontFamily:"var(--mono)",marginBottom:2},}, label)
+              , React.createElement('div', { style: {fontSize:10,color:"var(--t2)",fontFamily:"var(--body)",lineHeight:1.3},}, ex)
+            )
+          ))
+        )
+      )
+
+      /* Quick prompts */
+      , React.createElement('div', { style: {display:"flex",gap:5,flexWrap:"wrap",marginBottom:8},}
+        , quickPrompts.map(p=>(
+          React.createElement('button', { key: p, onClick: ()=>setInp(p), style: {fontSize:11,padding:"3px 9px",background:"var(--bg3)",border:"1px solid var(--border2)",borderRadius:20,color:"var(--t2)",cursor:"pointer",fontFamily:"var(--body)"},}, p)
+        ))
+      )
+
+      /* Chat messages */
+      , React.createElement('div', { style: {height:"45vh",overflowY:"auto",background:"var(--bg2)",borderRadius:8,border:"1px solid var(--border)",padding:14,marginBottom:10},}
+        , msgs.length===0&&(
+          React.createElement('div', { style: {textAlign:"center",color:"var(--t3)",fontFamily:"var(--mono)",padding:24,fontSize:12,lineHeight:2},}
+            , React.createElement('div', { style: {fontSize:28,marginBottom:8},}, "\uD83E\uDD16"), "Hey "
+             , name, "! I can EXECUTE actions directly."     , React.createElement('br', null), "Tell me to enter scores, mark chapters,"
+                  , React.createElement('br', null), "add tasks \u2014 I will do it instantly."       , React.createElement('br', null), "Or just chat normally."
+
+          )
+        )
+        , msgs.map((m,i)=>{
+          const isAction=m.role==="assistant"&&m.content.startsWith("**Actions");
+          return(
+            React.createElement('div', { key: i, style: {marginBottom:12,display:"flex",flexDirection:"column",alignItems:m.role==="user"?"flex-end":"flex-start"},}
+              , React.createElement('div', { style: {maxWidth:"90%",padding:"10px 14px",
+                borderRadius:m.role==="user"?"12px 12px 2px 12px":"12px 12px 12px 2px",
+                background:m.role==="user"?"rgba(0,122,31,.25)":isAction?"rgba(170,68,255,.1)":"var(--card2)",
+                border:`1px solid ${m.role==="user"?"var(--g3)":isAction?"var(--pur)":"var(--border2)"}`,
+                color:"var(--text)",fontSize:13,lineHeight:1.65,fontFamily:"var(--body)",whiteSpace:"pre-wrap"},}
+                , m.role==="assistant"&&React.createElement('div', { style: {fontSize:9,color:isAction?"var(--pur)":"var(--g)",fontFamily:"var(--mono)",marginBottom:5},}, isAction?"ARIA \u26A1 EXECUTED":"ARIA \u25C6")
+                , m.content
+              )
+            )
+          );
+        })
+        , loading&&(
+          React.createElement('div', { style: {display:"flex",alignItems:"center",gap:8,color:"var(--t3)",fontFamily:"var(--mono)",fontSize:12},}
+            , React.createElement('div', { style: {width:7,height:7,borderRadius:"50%",background:"var(--g)",animation:"blink 1s infinite"},}), "ARIA is processing..."
+
+          )
+        )
+        , React.createElement('div', { ref: endRef,})
+      )
+
+      /* Input */
+      , React.createElement('div', { style: {display:"flex",gap:8},}
+        , React.createElement('input', { value: inp, onChange: e=>setInp(e.target.value), onKeyDown: e=>e.key==="Enter"&&send(),
+          placeholder: `Command ARIA or just chat, ${name}...`,
+          style: {flex:1,background:"var(--bg3)",border:"1px solid var(--border2)",borderRadius:8,padding:"11px 14px",color:"var(--text)",fontFamily:"var(--body)",fontSize:13},})
+        , React.createElement(Btn, { variant: "filled", onClick: send, style: {minWidth:52},}, loading?"...":"\u25B6")
+      )
+      , msgs.length>0&&React.createElement(Btn, { size: "sm", variant: "ghost", style: {marginTop:6,width:"100%"}, onClick: ()=>{setMsgs([]);updateData({chatHistory:[]});},}, "CLEAR CHAT" )
+    )
+  );
+}
+
+// - MAIN APP -
+function App(){
+  const [data,setData]=useState(()=>{
+    const s=load();return s?{...defaults(),...s}:defaults();
+  });
+  const [tab,setTab]=useState("dashboard");
+
+  const updateData=useCallback((updates)=>{
+    setData(prev=>{const next={...prev,...updates};save(next);return next;});
+  },[]);
+
+  const tabs=[
+    {id:"dashboard",icon:"\u2B21",label:"HOME"},
+    {id:"todo",icon:"\u2705",label:"TODO"},
+    {id:"tests",icon:"\uD83D\uDCDD",label:"TESTS"},
+    {id:"chapters",icon:"\uD83D\uDCDA",label:"CHAPTERS"},
+    {id:"deadlines",icon:"\u26A0",label:"DEADLINES"},
+    {id:"revision",icon:"\uD83D\uDD04",label:"REVISE"},
+    {id:"pomodoro",icon:"\u23F1",label:"FOCUS"},
+    {id:"performance",icon:"\uD83D\uDCCA",label:"STATS"},
+    {id:"achievements",icon:"\uD83C\uDFC5",label:"BADGES"},
+    {id:"analytics",icon:"\uD83D\uDCC8",label:"ANALYTICS"},
+    {id:"ai",icon:"\uD83E\uDD16",label:"ARIA"},
+  ];
+
+  const render=()=>{
+    switch(tab){
+      case "dashboard": return React.createElement(Dashboard, { data: data, setTab: setTab,});
+      case "todo": return React.createElement(ToDoList, { data: data, updateData: updateData, setTab: setTab,});
+      case "tests": return React.createElement(TestPlanner, { data: data, updateData: updateData,});
+      case "chapters": return React.createElement(ChapterRoadmap, { data: data, updateData: updateData,});
+      case "deadlines": return React.createElement(DeadlineView, { data: data, updateData: updateData,});
+      case "revision": return React.createElement(RevisionSystem, { data: data, updateData: updateData,});
+      case "pomodoro": return React.createElement(Pomodoro, { data: data, updateData: updateData,});
+      case "performance": return React.createElement(Performance, { data: data,});
+      case "achievements": return React.createElement(Achievements, { data: data, updateData: updateData,});
+      case "analytics": return React.createElement(Analytics, { data: data,});
+      case "ai": return React.createElement(AIChat, { data: data, updateData: updateData, setTab: setTab,});
+      default: return null;
+    }
+  };
+
+  const stats=useMemo(()=>computeStats(data),[data]);
+
+  return(
+    React.createElement('div', { style: {minHeight:"100vh",background:"var(--bg)"},}
+      , React.createElement('div', { className: "scan",})
+      , React.createElement('div', { style: {position:"sticky",top:0,zIndex:100,background:"rgba(2,10,2,.97)",backdropFilter:"blur(10px)",borderBottom:"1px solid var(--border)",padding:"0 14px"},}
+        , React.createElement('div', { style: {maxWidth:800,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:52},}
+          , React.createElement('div', null
+            , React.createElement('div', { style: {fontFamily:"var(--display)",fontSize:13,color:"var(--g)",letterSpacing:2},}, "NEET 2028" )
+            , React.createElement('div', { style: {fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",letterSpacing:3},}, "AIR-1 MISSION" )
+          )
+          , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:12},}
+            , stats.overdueChapters>0&&React.createElement('span', { style: {fontFamily:"var(--mono)",fontSize:11,color:"var(--red)"},}, "\u26A0", stats.overdueChapters)
+            , React.createElement('span', { style: {fontFamily:"var(--mono)",fontSize:11,color:"var(--gold)"},}, "\uD83D\uDD25", data.streak||0, "d")
+            , React.createElement('span', { style: {fontFamily:"var(--mono)",fontSize:11,color:"var(--g)"},}, "\u23F1", Math.round(data.focusHours||0), "h")
+          )
+        )
+      )
+      , React.createElement('div', { style: {maxWidth:800,margin:"0 auto",padding:"18px 14px 96px"},}
+        , render()
+      )
+      , React.createElement('div', { style: {position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:"rgba(2,10,2,.97)",backdropFilter:"blur(10px)",borderTop:"1px solid var(--border)"},}
+        , React.createElement('div', { style: {maxWidth:800,margin:"0 auto",display:"flex",overflowX:"auto",padding:"4px 6px",gap:2},}
+          , tabs.map(t=>(
+            React.createElement('button', { key: t.id, onClick: ()=>setTab(t.id),
+              style: {flex:"0 0 auto",display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"5px 8px",borderRadius:5,border:"none",cursor:"pointer",minWidth:52,background:tab===t.id?"rgba(0,122,31,.2)":"transparent",borderTop:tab===t.id?"2px solid var(--g)":"2px solid transparent",transition:"all .2s"},}
+              , React.createElement('span', { style: {fontSize:15},}, t.icon)
+              , React.createElement('span', { style: {fontSize:8,fontFamily:"var(--mono)",color:tab===t.id?"var(--g)":"var(--t3)",letterSpacing:.5},}, t.label)
+            )
+          ))
+        )
+      )
+    )
+  );
+}
+
+    // Mount app
+    try {
+      const domNode = document.getElementById("root");
+      const root = ReactDOM.createRoot(domNode);
+      root.render(React.createElement(App));
+    } catch(e) {
+      document.getElementById('error-box').style.display='block';
+      document.getElementById('error-box').textContent = 'MOUNT ERROR: ' + e.message + '\n' + e.stack;
+    }
+  </script>
+</body>
+</html>
